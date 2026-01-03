@@ -7,6 +7,7 @@ import CategoriesPage from "./pages/CategoriesPage";
 import CategoryPostsPage from "./pages/CategoriesPage"; // NEW
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Login from "./pages/form/Login";
+import Register from "./pages/form/Register";
 import ProtectedRoute from "./features/auth/ProtectedRoute";
 
 export default function AppRouter() {
@@ -19,6 +20,7 @@ export default function AppRouter() {
       <Route path="/categories/:slug" element={<CategoryPostsPage />} />{" "}
       {/* NEW */}
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route
         path="/admin"
         element={

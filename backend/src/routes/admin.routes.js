@@ -1,8 +1,24 @@
-import { Router } from "express";
-import { issueAdminToken } from "../controllers/adminAuth.controller.js";
+import express from "express";
+import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
+import { adminLogin } from "../controllers/adminAuth.controller.js";
 
-const router = Router();
+const router = express.Router();
 
-router.post("/token", issueAdminToken);
+// Admin login (special route with API key)
+router.post("/login", adminLogin);
+
+// All routes below require admin authentication
+router.use(authenticate);
+router.use(isAdmin);
+
+// Add your admin-only routes here
+router.get("/dashboard", (req, res) => {
+  res.json({
+    message: "Welcome to admin dashboard",
+    user: req.user,
+  });
+});
+
+// ... other admin routes
 
 export default router;

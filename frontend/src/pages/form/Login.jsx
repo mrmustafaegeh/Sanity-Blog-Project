@@ -1,7 +1,8 @@
+// frontend/src/pages/form/Login.jsx
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../../store/authSlice";
+import { loginUser, clearError } from "../../store/authSlice";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -25,6 +26,13 @@ export default function Login() {
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, location]);
+
+  // Clear error when component unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
 
   const handleChange = (e) => {
     setFormData({
@@ -199,12 +207,12 @@ export default function Login() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
-              <a
-                href="#"
+              <Link
+                to="/register"
                 className="text-[#12725c] hover:text-[#0f5a4a] font-medium"
               >
                 Sign up
-              </a>
+              </Link>
             </p>
           </div>
         </div>
@@ -214,8 +222,9 @@ export default function Login() {
           <p className="text-xs text-blue-800 font-medium mb-1">
             Demo Credentials:
           </p>
-          <p className="text-xs text-blue-700">Email: admin@example.com</p>
-          <p className="text-xs text-blue-700">Password: password123</p>
+          <p className="text-xs text-blue-700">
+            Create an account or use test credentials after registration
+          </p>
         </div>
       </div>
     </div>

@@ -1,32 +1,20 @@
 import express from "express";
-import jwt from "jsonwebtoken";
-import AppError from "../utils/AppError.js";
+import {
+  register,
+  login,
+  getMe,
+  logout,
+} from "../controllers/auth.controller.js";
+import { authenticate } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/admin/login", (req, res) => {
-  const { apiKey } = req.body;
+// Public routes
+router.post("/register", register);
+router.post("/login", login);
 
-  // 1. Validate API key
-  if (!apiKey || apiKey !== process.env.ADMIN_API_KEY) {
-    throw new AppError("Invalid admin API key", 401);
-  }
-
-  // 2. Issue JWT
-  const token = jwt.sign(
-    {
-      role: "admin",
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "12h",
-    }
-  );
-
-  // 3. Return token
-  res.status(200).json({
-    token,
-  });
-});
+// Protected routes
+router.get("/me", authenticate, getMe);
+router.post("/logout", authenticate, logout);
 
 export default router;
