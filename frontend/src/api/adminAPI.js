@@ -4,12 +4,15 @@ export const adminAPI = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAdminToken: builder.mutation({
       query: (apiKey) => ({
-        url: "/admin/token",
+        url: "/admin/login",
         method: "POST",
-        headers: {
-          "x-admin-key": apiKey,
-        },
+        body: { apiKey },
       }),
+    }),
+
+    getAdminAnalytics: builder.query({
+      query: () => "/admin/analytics",
+      providesTags: ["AdminAnalytics"],
     }),
 
     regenerateSummary: builder.mutation({
@@ -20,10 +23,13 @@ export const adminAPI = apiSlice.injectEndpoints({
           Authorization: `Bearer ${token}`,
         },
       }),
-      invalidatesTags: (r, e, { id }) => [{ type: "Post", id }, "Posts"],
+      invalidatesTags: (r, e, { id }) => [{ type: "Post", id }],
     }),
   }),
 });
 
-export const { useGetAdminTokenMutation, useRegenerateSummaryMutation } =
-  adminAPI;
+export const {
+  useGetAdminTokenMutation,
+  useGetAdminAnalyticsQuery,
+  useRegenerateSummaryMutation,
+} = adminAPI;

@@ -1,8 +1,9 @@
-// backend/src/controllers/getPostBySlug.controller.js
-import sanityClient from "../lib/sanityClient.js"; // ← Add .js extension
+import sanityClient from "../lib/sanityClient.js";
+import PostEngagement from "../models/PostEngagement.js";
 
 export async function getPostBySlug(req, res) {
   const { slug } = req.params;
+  const userId = req.user?.id; // optional auth
 
   const query = `*[_type=="post" && slug.current==$slug][0]{
     _id,
@@ -12,10 +13,7 @@ export async function getPostBySlug(req, res) {
     publishedAt,
     _createdAt,
     mainImage{
-      asset->{
-        _id,
-        url
-      },
+      asset->{url},
       alt
     },
     author->{
@@ -24,7 +22,7 @@ export async function getPostBySlug(req, res) {
       image,
       bio
     },
-    category->{
+    categories[]->{
       title,
       slug
     },
@@ -39,5 +37,18 @@ export async function getPostBySlug(req, res) {
     return res.status(404).json({ message: "Post not found" });
   }
 
-  res.json(post);
+  // 🔹 Get engagement data
+  const engagement = await PostEngagement.findOne({
+    postId: post._id,
+  });
+
+  res.json({
+    ...post,
+
+    likesCount: engagement?.likes.length || 0,
+    likedByUser: userId ? engagement?.likes.includes(userId) : false,
+
+    commentsCount: engagement?.commentsCount || 0,
+    views: engagement?.views || 0,
+  });
 }

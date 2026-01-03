@@ -22,8 +22,15 @@ export default function Login() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      const from = location.state?.from?.pathname || "/";
-      navigate(from, { replace: true });
+      // Get the user from the Redux store
+      const user = JSON.parse(localStorage.getItem("user")); // Or from state.auth.user
+
+      if (user?.role === "admin" || user?.isAdmin) {
+        navigate("/admin", { replace: true });
+      } else {
+        const from = location.state?.from?.pathname || "/";
+        navigate(from, { replace: true });
+      }
     }
   }, [isAuthenticated, navigate, location]);
 

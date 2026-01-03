@@ -200,6 +200,16 @@ export const postsAPI = apiSlice.injectEndpoints({
       }),
       // Don't invalidate cache, just update view count in background
     }),
+    // ❤️ LIKE / UNLIKE
+    toggleLike: builder.mutation({
+      query: (postId) => ({
+        url: `/likes/${postId}`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, postId) => [
+        { type: "Post", id: postId },
+      ],
+    }),
   }),
 });
 
@@ -218,4 +228,5 @@ export const {
   useUpdatePostMutation,
   useDeletePostMutation,
   useIncrementViewCountMutation,
+  useToggleLikeMutation,
 } = postsAPI;

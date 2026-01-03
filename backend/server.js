@@ -10,6 +10,7 @@ import adminRoutes from "./src/routes/admin.routes.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import viewRoutes from "./src/routes/view.routes.js";
 import commentRoutes from "./src/routes/comment.routes.js";
+import likeRoutes from "./src/routes/like.routes.js";
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +43,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/likes", likeRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

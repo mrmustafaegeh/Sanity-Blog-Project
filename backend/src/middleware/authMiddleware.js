@@ -5,12 +5,11 @@ export const authenticate = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader?.startsWith("Bearer ")) {
-      throw new AppError("No token provided", 401);
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new AppError("Authentication required", 401);
     }
 
     const token = authHeader.split(" ")[1];
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     req.user = {
@@ -19,21 +18,20 @@ export const authenticate = (req, res, next) => {
     };
 
     next();
-  } catch (error) {
-    if (error.name === "JsonWebTokenError") {
-      return next(new AppError("Invalid token", 401));
-    }
-    if (error.name === "TokenExpiredError") {
+  } catch (err) {
+    if (err.name === "TokenExpiredError") {
       return next(new AppError("Token expired", 401));
     }
-    next(error);
+    if (err.name === "JsonWebTokenError") {
+      return next(new AppError("Invalid token", 401));
+    }
+    next(err);
   }
 };
 
-// Optional: Admin-only middleware
 export const isAdmin = (req, res, next) => {
-  if (req.user.role !== "admin") {
-    throw new AppError("Access denied. Admin only.", 403);
+  if (!req.user || req.user.role !== "admin") {
+    return next(new AppError("Admin access only", 403));
   }
   next();
 };

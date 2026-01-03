@@ -1,49 +1,26 @@
-// frontend/src/components/layout/Navbar.jsx
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../../../store/authSlice";
-import { Search, Menu, X, User, LogOut } from "lucide-react";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { Search, Menu, X } from "lucide-react";
 import SearchBar from "../../shared/SearchBar";
+import UserMenu from "../../UserMenu";
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const userDropdownRef = useRef(null);
 
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   const isActive = (path) => location.pathname === path;
-
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/");
-    setUserDropdownOpen(false);
-  };
 
   const navLinks = [
     { path: "/", label: "Home" },
     { path: "/blog", label: "Blog" },
     { path: "/categories", label: "Categories" },
   ];
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        userDropdownRef.current &&
-        !userDropdownRef.current.contains(event.target)
-      ) {
-        setUserDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   return (
     <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-gray-200 shadow-sm">
@@ -100,46 +77,9 @@ export default function Navbar() {
             </div>
 
             {/* Desktop Auth Section */}
-            <div className="hidden lg:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center">
               {isAuthenticated ? (
-                <div className="relative" ref={userDropdownRef}>
-                  <button
-                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-bold">
-                        {user?.name?.charAt(0) || "U"}
-                      </span>
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      {user?.name?.split(" ")[0] || "User"}
-                    </span>
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {userDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 animate-fade-in">
-                      {user?.isAdmin && (
-                        <Link
-                          to="/admin"
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          <User className="w-4 h-4" />
-                          <span>Admin Dashboard</span>
-                        </Link>
-                      )}
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Logout</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <UserMenu />
               ) : (
                 <Link
                   to="/login"
@@ -166,9 +106,11 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Search Bar */}
-        <div className="md:hidden mt-3">
-          <SearchBar />
-        </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden mt-3">
+            <SearchBar />
+          </div>
+        )}
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
@@ -189,48 +131,9 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              {isAuthenticated ? (
-                <>
-                  {user?.isAdmin && (
-                    <Link
-                      to="/admin"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      Admin Dashboard
-                    </Link>
-                  )}
-                  <div className="px-4 py-3 border-t border-gray-100">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-bold">
-                          {user?.name?.charAt(0) || "U"}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {user?.name}
-                        </p>
-                        <p className="text-xs text-gray-500">{user?.email}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="mx-4 px-4 py-3 bg-red-50 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="mx-4 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-400 text-white text-sm font-medium rounded-lg hover:shadow-lg text-center"
-                >
-                  Login
-                </Link>
-              )}
+              <div className="mt-4 px-4">
+                <UserMenu />
+              </div>
             </div>
           </div>
         )}

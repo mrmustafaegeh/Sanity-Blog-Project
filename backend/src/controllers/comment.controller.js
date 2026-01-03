@@ -1,49 +1,34 @@
 import Comment from "../models/Comment.js";
+import PostEngagement from "../models/PostEngagement.js";
 
-/* GET comments for a post */
-export async function getComments(req, res) {
-  const { postId } = req.params;
-
-  const comments = await Comment.find({ postId })
-    .populate("user", "name avatar")
-    .sort({ createdAt: -1 });
+export const getComments = async (req, res) => {
+  const comments = await Comment.find({
+    postId: req.params.postId,
+    isApproved: true,
+  }).populate("author", "name");
 
   res.json(comments);
-}
+};
 
-/* CREATE comment */
-export async function addComment(req, res) {
-  const { postId } = req.params;
-  const { content } = req.body;
-
-  if (!content?.trim()) {
-    return res.status(400).json({ message: "Comment is empty" });
-  }
-
+export const addComment = async (req, res) => {
   const comment = await Comment.create({
-    postId,
-    content,
-    user: req.user.id,
+    postId: req.params.postId,
+    author: req.user.id,
+    content: req.body.content,
   });
 
-  const populated = await comment.populate("user", "name avatar");
+  res.status(201).json(comment);
+};
 
-  res.status(201).json(populated);
-}
+export const deleteComment = async (req, res) => {
+  const comment = await Comment.findById(req.params.id);
 
-/* DELETE comment */
-export async function deleteComment(req, res) {
-  const { id } = req.params;
+  if (!comment) return res.status(404).json({ message: "Not found" });
 
-  const comment = await Comment.findById(id);
-  if (!comment) {
-    return res.status(404).json({ message: "Comment not found" });
-  }
-
-  if (comment.user.toString() !== req.user.id) {
-    return res.status(403).json({ message: "Not allowed" });
+  if (comment.author.toString() !== req.user.id && req.user.role !== "admin") {
+    return res.status(403).json({ message: "Forbidden" });
   }
 
   await comment.deleteOne();
   res.json({ success: true });
-}
+};

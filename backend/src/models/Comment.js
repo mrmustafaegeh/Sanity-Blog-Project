@@ -2,13 +2,9 @@ import mongoose from "mongoose";
 
 const commentSchema = new mongoose.Schema(
   {
-    postId: {
-      type: String, // Sanity post _id
-      required: true,
-      index: true,
-    },
+    postId: { type: String, required: true, index: true },
 
-    user: {
+    author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -17,7 +13,19 @@ const commentSchema = new mongoose.Schema(
     content: {
       type: String,
       required: true,
-      maxlength: 1000,
+      trim: true,
+      maxlength: 2000,
+    },
+
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
+
+    parentComment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+      default: null,
     },
   },
   { timestamps: true }

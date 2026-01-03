@@ -1,5 +1,4 @@
-// frontend/src/pages/CategoriesPage.jsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useGetCategoriesQuery, useGetRecentPostsQuery } from "../api/postsAPI";
 import { Search, Filter, FolderOpen, TrendingUp, Clock } from "lucide-react";
@@ -11,7 +10,7 @@ const CategoriesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
 
-  // Use RTK Query instead of direct Sanity client
+  // Fetch categories and recent posts
   const {
     data: categories = [],
     isLoading: categoriesLoading,
@@ -24,35 +23,30 @@ const CategoriesPage = () => {
     isError: postsError,
   } = useGetRecentPostsQuery(3);
 
-  // Filter categories based on search and active filter
+  // Filter and sort categories
   const filteredCategories = categories
-    .filter((category) => {
-      const matchesSearch =
+    .filter((cat) => {
+      const query = searchQuery.toLowerCase();
+      return (
         !searchQuery ||
-        category.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        category.description?.toLowerCase().includes(searchQuery.toLowerCase());
-
-      return matchesSearch;
+        cat.title?.toLowerCase().includes(query) ||
+        cat.description?.toLowerCase().includes(query)
+      );
     })
     .sort((a, b) => {
-      if (activeFilter === "popular") {
+      if (activeFilter === "popular")
         return (b.postCount || 0) - (a.postCount || 0);
-      }
-      if (activeFilter === "recent") {
-        // For recent, we'll sort by creation date if available
+      if (activeFilter === "recent")
         return new Date(b._createdAt || 0) - new Date(a._createdAt || 0);
-      }
-      return 0; // Default: alphabetical
+      return 0;
     });
 
   if (categoriesLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
-            <p className="mt-4 text-gray-600">Loading categories...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+          <p className="mt-4 text-gray-600">Loading categories...</p>
         </div>
       </div>
     );
@@ -60,13 +54,11 @@ const CategoriesPage = () => {
 
   if (categoriesError) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
-        <div className="container mx-auto px-4">
-          <ErrorState
-            message="Failed to load categories"
-            error={categoriesError}
-          />
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
+        <ErrorState
+          message="Failed to load categories"
+          error={categoriesError}
+        />
       </div>
     );
   }
@@ -88,7 +80,7 @@ const CategoriesPage = () => {
           </p>
         </div>
 
-        {/* Search and Filter Section */}
+        {/* Search & Filter */}
         <div className="mb-12 bg-white rounded-2xl shadow-sm p-6 border border-gray-200">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-6 lg:space-y-0">
             <div className="w-full lg:w-1/3">
@@ -105,39 +97,24 @@ const CategoriesPage = () => {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <button
-                className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl transition-all ${
-                  activeFilter === "all"
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-md"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-                onClick={() => setActiveFilter("all")}
-              >
-                <Filter className="w-4 h-4" />
-                <span className="text-sm font-medium">All Categories</span>
-              </button>
-              <button
-                className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl transition-all ${
-                  activeFilter === "popular"
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-md"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-                onClick={() => setActiveFilter("popular")}
-              >
-                <TrendingUp className="w-4 h-4" />
-                <span className="text-sm font-medium">Most Popular</span>
-              </button>
-              <button
-                className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl transition-all ${
-                  activeFilter === "recent"
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-md"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-                onClick={() => setActiveFilter("recent")}
-              >
-                <Clock className="w-4 h-4" />
-                <span className="text-sm font-medium">Recently Updated</span>
-              </button>
+              {[
+                { key: "all", label: "All Categories", icon: Filter },
+                { key: "popular", label: "Most Popular", icon: TrendingUp },
+                { key: "recent", label: "Recently Updated", icon: Clock },
+              ].map(({ key, label, icon: Icon }) => (
+                <button
+                  key={key}
+                  className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl transition-all ${
+                    activeFilter === key
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-md"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                  onClick={() => setActiveFilter(key)}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{label}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -148,7 +125,6 @@ const CategoriesPage = () => {
             {filteredCategories.map((category) => {
               const slug = category.slug?.current || category._id;
               const postCount = category.postCount || 0;
-
               return (
                 <div
                   key={category._id}
@@ -228,7 +204,7 @@ const CategoriesPage = () => {
           </div>
         )}
 
-        {/* Recent Posts Section */}
+        {/* Recent Posts */}
         <div className="mt-16">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -243,8 +219,7 @@ const CategoriesPage = () => {
               to="/blog"
               className="text-emerald-600 hover:text-emerald-700 font-medium flex items-center space-x-1"
             >
-              <span>View All Posts</span>
-              <span>→</span>
+              <span>View All Posts</span> <span>→</span>
             </Link>
           </div>
 
