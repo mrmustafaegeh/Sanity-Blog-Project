@@ -119,6 +119,7 @@ export default function Register() {
     return Object.keys(errors).length === 0;
   };
 
+  // In your Register.jsx, add this to handleSubmit:
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -127,7 +128,14 @@ export default function Register() {
     }
 
     const { name, email, password } = formData;
-    dispatch(registerUser({ name, email, password }));
+
+    console.log("Before dispatch registerUser");
+    const result = await dispatch(registerUser({ name, email, password }));
+    console.log("After dispatch registerUser", result);
+
+    if (result.meta.requestStatus === "fulfilled") {
+      console.log("Registration successful, should navigate");
+    }
   };
 
   return (

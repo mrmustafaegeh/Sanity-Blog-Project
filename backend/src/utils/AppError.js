@@ -1,9 +1,13 @@
-// utils/AppError.js
-export default class AppError extends Error {
+// backend/src/utils/AppError.js
+class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
     this.statusCode = statusCode;
     this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
+    this.isOperational = true;
+
     Error.captureStackTrace(this, this.constructor);
   }
 }
+
+export default AppError;

@@ -1,4 +1,3 @@
-// backend/controllers/auth.controller.js
 import jwt from "jsonwebtoken";
 import User from "../models/User.model.js";
 import AppError from "../utils/AppError.js";
@@ -34,6 +33,8 @@ export const register = async (req, res, next) => {
         email: user.email,
         role: user.role,
         isAdmin: user.role === "admin",
+        profileImage: user.profileImage,
+        createdAt: user.createdAt,
       },
     });
   } catch (error) {
@@ -41,13 +42,21 @@ export const register = async (req, res, next) => {
   }
 };
 
-// Login user
+// Login user - FIXED VERSION
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
+    // Find user WITH password field (important!)
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      throw new AppError("Invalid email or password", 401);
+    }
+
+    // Compare password
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
       throw new AppError("Invalid email or password", 401);
     }
 
@@ -65,6 +74,11 @@ export const login = async (req, res, next) => {
       { expiresIn: "7d" }
     );
 
+    // Convert to safe object (without password)
+    const userResponse = user.toSafeObject
+      ? user.toSafeObject()
+      : user.toObject();
+
     res.status(200).json({
       success: true,
       token,
@@ -74,6 +88,8 @@ export const login = async (req, res, next) => {
         email: user.email,
         role: user.role,
         isAdmin: user.role === "admin",
+        profileImage: user.profileImage,
+        createdAt: user.createdAt,
       },
     });
   } catch (error) {
@@ -99,6 +115,7 @@ export const getMe = async (req, res, next) => {
         email: user.email,
         role: user.role,
         isAdmin: user.role === "admin",
+        profileImage: user.profileImage,
         createdAt: user.createdAt,
       },
     });
@@ -157,6 +174,7 @@ export const updateProfile = async (req, res, next) => {
         email: user.email,
         role: user.role,
         isAdmin: user.role === "admin",
+        profileImage: user.profileImage,
         createdAt: user.createdAt,
       },
     });
@@ -170,8 +188,8 @@ export const updatePassword = async (req, res, next) => {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user.userId;
 
-    // Get user with password field
-    const user = await User.findById(userId);
+    // Get user with password field - IMPORTANT!
+    const user = await User.findById(userId).select("+password");
 
     if (!user) {
       throw new AppError("User not found", 404);
@@ -196,6 +214,66 @@ export const updatePassword = async (req, res, next) => {
       success: true,
       message: "Password updated successfully",
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadProfileImage = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+
+    if (!req.file) {
+      throw new AppError("No image file provided", 400);
+    }
+
+    // Get the Cloudinary URL
+    const imageUrl = req.file.path;
+
+    // Update user with new profile image
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { profileImage: imageUrl },
+      { new: true, select: "-password" }
+    );
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile image uploaded successfully",
+      imageUrl: imageUrl,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage,
+        isAdmin: user.role === "admin",
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Add validation helper function
+export const validateRegistration = async (req, res, next) => {
+  try {
+    const { name, email, password } = req.body;
+
+    // Basic validation
+    if (!name || !email || !password) {
+      throw new AppError("All fields are required", 400);
+    }
+
+    if (password.length < 6) {
+      throw new AppError("Password must be at least 6 characters", 400);
+    }
+
+    next();
   } catch (error) {
     next(error);
   }

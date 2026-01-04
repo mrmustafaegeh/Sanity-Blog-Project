@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { apiSlice } from "./apiSlice";
+import { apiSlice } from "./apiSlice"; // Make sure this is from the right path
 import authSlice from "./authSlice";
 import postsSlice from "./postsSlice";
 
@@ -9,8 +9,8 @@ const store = configureStore({
     auth: authSlice,
     posts: postsSlice,
   },
-
-  middleware: (getDefault) => getDefault().concat(apiSlice.middleware),
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(apiSlice.middleware),
 });
 
 export default store;

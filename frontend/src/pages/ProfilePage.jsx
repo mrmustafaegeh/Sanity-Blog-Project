@@ -1,5 +1,5 @@
 // frontend/src/pages/ProfilePage.jsx
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUser } from "../store/authSlice";
 import {
@@ -13,16 +13,21 @@ import {
   Shield,
   Calendar,
   CheckCircle,
+  Upload,
+  Loader2,
 } from "lucide-react";
 
 export default function ProfilePage() {
   const { user, token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const fileInputRef = useRef(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [previewImage, setPreviewImage] = useState(user?.profileImage || null);
 
   // Profile form state
   const [formData, setFormData] = useState({
@@ -43,6 +48,70 @@ export default function ProfilePage() {
 
   const handlePasswordChange = (e) => {
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setMessage({ type: "error", text: "Please select an image file" });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: "error", text: "Image must be less than 5MB" });
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImage(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload image
+    setUploadingImage(true);
+    setMessage({ type: "", text: "" });
+
+    try {
+      const formData = new FormData();
+      formData.append("profileImage", file);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/upload-profile-image`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to upload image");
+      }
+
+      // Update Redux state with new image URL
+      dispatch(updateUser({ profileImage: data.imageUrl }));
+
+      setMessage({ type: "success", text: "Profile picture updated!" });
+    } catch (error) {
+      setMessage({ type: "error", text: error.message });
+      setPreviewImage(user?.profileImage || null); // Revert preview
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleUpdateProfile = async (e) => {
@@ -145,6 +214,17 @@ export default function ProfilePage() {
     setMessage({ type: "", text: "" });
   };
 
+  const getInitials = (name) => {
+    return (
+      name
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2) || "U"
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
@@ -152,13 +232,43 @@ export default function ProfilePage() {
         <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-8 mb-6 text-white">
           <div className="flex items-center gap-6">
             <div className="relative">
-              <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-4xl font-bold backdrop-blur-sm">
-                {user?.name?.charAt(0).toUpperCase() || "U"}
-              </div>
-              <button className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full flex items-center justify-center text-emerald-600 hover:bg-gray-100 transition-colors">
-                <Camera className="w-4 h-4" />
+              {/* Profile Picture */}
+              {previewImage ? (
+                <img
+                  src={previewImage}
+                  alt={user?.name}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-white/20 backdrop-blur-sm"
+                />
+              ) : (
+                <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-4xl font-bold backdrop-blur-sm border-4 border-white/20">
+                  {getInitials(user?.name)}
+                </div>
+              )}
+
+              {/* Upload Button */}
+              <button
+                onClick={handleImageClick}
+                disabled={uploadingImage}
+                className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full flex items-center justify-center text-emerald-600 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                title="Change profile picture"
+              >
+                {uploadingImage ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Camera className="w-4 h-4" />
+                )}
               </button>
+
+              {/* Hidden File Input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
             </div>
+
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-1">{user?.name}</h1>
               <p className="text-emerald-100 flex items-center gap-2">
