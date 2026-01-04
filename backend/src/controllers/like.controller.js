@@ -2,7 +2,7 @@ import PostEngagement from "../models/PostEngagement.js";
 
 export async function toggleLike(req, res) {
   const { postId } = req.params;
-  const userId = req.user.id;
+  const userId = req.user.userId; // Fixed: using userId from JWT
 
   let engagement = await PostEngagement.findOne({ postId });
 
@@ -10,6 +10,8 @@ export async function toggleLike(req, res) {
     engagement = await PostEngagement.create({
       postId,
       likes: [userId],
+      views: 0,
+      commentsCount: 0,
     });
     return res.json({ liked: true, likesCount: 1 });
   }

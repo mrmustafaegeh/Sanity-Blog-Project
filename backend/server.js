@@ -1,4 +1,3 @@
-// backend/server.js
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -12,13 +11,10 @@ import viewRoutes from "./src/routes/view.routes.js";
 import commentRoutes from "./src/routes/comment.routes.js";
 import likeRoutes from "./src/routes/like.routes.js";
 
-// Load environment variables
 dotenv.config();
 
-// Initialize Express app
 const app = express();
 
-// Connect to MongoDB
 connectDB();
 
 // CORS configuration
@@ -31,19 +27,19 @@ app.use(
   })
 );
 
-app.use("/api/comments", commentRoutes);
-
-// Body parser middleware
+// Body parser middleware (BEFORE routes)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// API Routes
+// API Routes (ALL routes BEFORE error handlers)
 app.use("/api/posts", postRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/likes", likeRoutes);
+app.use("/api/comments", commentRoutes);
+app.use("/api/views", viewRoutes); // MOVED: Was after error handlers
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -67,11 +63,14 @@ app.get("/", (req, res) => {
       search: "/api/search",
       admin: "/api/admin",
       auth: "/api/auth",
+      likes: "/api/likes",
+      comments: "/api/comments",
+      views: "/api/views",
     },
   });
 });
 
-// 404 handler
+// 404 handler (AFTER all routes)
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -79,9 +78,7 @@ app.use((req, res) => {
   });
 });
 
-app.use("/api/views", viewRoutes);
-
-// Global error handler
+// Global error handler (LAST)
 app.use((err, req, res, next) => {
   console.error("❌ Error:", err);
 
@@ -95,33 +92,23 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
   console.log(`
   ╔════════════════════════════════════════╗
-  ║                                        ║
   ║   🚀 Server is running!                ║
-  ║                                        ║
   ║   📍 Port: ${PORT}                        ║
   ║   🌍 URL: http://localhost:${PORT}       ║
-  ║   📊 API: http://localhost:${PORT}/api   ║
-  ║   🏥 Health: http://localhost:${PORT}/health ║
-  ║   🌐 Environment: ${process.env.NODE_ENV || "development"}           ║
-  ║                                        ║
   ╚════════════════════════════════════════╝
   `);
 });
 
-// Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
   console.error("❌ Unhandled Rejection:", err);
-  // Close server & exit process
   process.exit(1);
 });
 
-// Handle uncaught exceptions
 process.on("uncaughtException", (err) => {
   console.error("❌ Uncaught Exception:", err);
   process.exit(1);

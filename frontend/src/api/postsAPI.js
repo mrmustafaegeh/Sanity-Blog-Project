@@ -69,10 +69,11 @@ export const postsAPI = apiSlice.injectEndpoints({
 
     // Get categories
     getCategories: builder.query({
-      query: () => `/categories`,
+      query: ({ page = 1, limit = 8 }) =>
+        `/categories?page=${page}&limit=${limit}`,
       transformResponse: (response) => {
         console.log("✅ getCategories response:", response);
-        return response.categories || [];
+        return response;
       },
       providesTags: ["Categories"],
     }),

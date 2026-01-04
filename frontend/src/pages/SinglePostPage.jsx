@@ -95,6 +95,34 @@ export default function SinglePostPage() {
     alert("Link copied!");
   };
 
+  // Helper function to render block content
+  const renderBlock = (block, index) => {
+    if (!block.children || !Array.isArray(block.children)) return null;
+
+    // Extract text from children - children are objects with a 'text' property
+    const text = block.children
+      .map((child) => child?.text || "")
+      .join("")
+      .trim();
+
+    if (!text) return null;
+
+    // Render based on block style
+    switch (block.style) {
+      case "h2":
+        return <h2 key={index}>{text}</h2>;
+      case "h3":
+        return <h3 key={index}>{text}</h3>;
+      case "h4":
+        return <h4 key={index}>{text}</h4>;
+      case "blockquote":
+        return <blockquote key={index}>{text}</blockquote>;
+      case "normal":
+      default:
+        return <p key={index}>{text}</p>;
+    }
+  };
+
   return (
     <>
       <SEO post={post} />
@@ -185,19 +213,7 @@ export default function SinglePostPage() {
             )}
 
             <div className="prose prose-lg max-w-none">
-              {post.body?.map((block, i) => {
-                if (!block.children) return null;
-
-                const text = block.children.map((c) => c.text).join("");
-                if (!text.trim()) return null;
-
-                if (block.style === "h2") return <h2 key={i}>{text}</h2>;
-                if (block.style === "h3") return <h3 key={i}>{text}</h3>;
-                if (block.style === "blockquote")
-                  return <blockquote key={i}>{text}</blockquote>;
-
-                return <p key={i}>{text}</p>;
-              })}
+              {post.body?.map((block, i) => renderBlock(block, i))}
             </div>
 
             {/* AUTHOR */}

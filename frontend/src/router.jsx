@@ -9,6 +9,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import Login from "./pages/form/Login";
 import Register from "./pages/form/Register";
 import ProtectedRoute from "./features/auth/ProtectedRoute";
+import ProfilePage from "./pages/ProfilePage";
 
 export default function AppRouter() {
   return (
@@ -26,6 +27,14 @@ export default function AppRouter() {
         element={
           <ProtectedRoute>
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />

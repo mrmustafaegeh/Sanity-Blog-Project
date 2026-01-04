@@ -4,6 +4,25 @@ import { Twitter, Linkedin, Globe, Mail } from "lucide-react";
 export default function AuthorBio({ author }) {
   if (!author) return null;
 
+  // Helper function to extract text from Sanity portable text
+  const extractTextFromBlocks = (blocks) => {
+    if (!blocks || !Array.isArray(blocks)) return "";
+
+    return blocks
+      .map((block) => {
+        if (!block.children || !Array.isArray(block.children)) return "";
+        return block.children.map((child) => child?.text || "").join("");
+      })
+      .join(" ")
+      .trim();
+  };
+
+  // Extract bio text if it's in portable text format, otherwise use as string
+  const bioText =
+    typeof author.bio === "string"
+      ? author.bio
+      : extractTextFromBlocks(author.bio) || "Content Creator";
+
   return (
     <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-200 p-6">
       <div className="flex items-start space-x-4">
@@ -26,7 +45,7 @@ export default function AuthorBio({ author }) {
             <div>
               <h3 className="text-xl font-bold text-gray-900">{author.name}</h3>
               <p className="text-emerald-600 font-medium text-sm mt-1">
-                {author.bio || "Content Creator"}
+                {bioText}
               </p>
             </div>
             <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-full">

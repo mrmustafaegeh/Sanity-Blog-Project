@@ -1,48 +1,39 @@
-import User from "../models/User.model.js";
+// backend/controllers/auth.controller.js
 import jwt from "jsonwebtoken";
+import User from "../models/User.model.js";
 import AppError from "../utils/AppError.js";
 
-// Generate JWT Token
-const generateToken = (userId, role = "user") => {
-  return jwt.sign({ id: userId, role }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || "7d",
-  });
-};
-
-// Register user
+// Register new user
 export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw new AppError("Email already registered", 400);
     }
 
-    // Create user
-    const user = await User.create({
-      name,
-      email,
-      password,
-    });
+    const user = await User.create({ name, email, password });
 
-    // Generate token
-    const token = generateToken(user._id, user.role);
-
-    // Remove password from response
-    user.password = undefined;
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.status(201).json({
       success: true,
-      message: "Registration successful",
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        avatar: user.avatar,
+        isAdmin: user.role === "admin",
       },
     });
   } catch (error) {
@@ -55,34 +46,34 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Check if user exists
-    const user = await User.findOne({ email }).select("password");
-    if (!user) {
+    const user = await User.findOne({ email });
+    if (!user || !(await user.comparePassword(password))) {
       throw new AppError("Invalid email or password", 401);
     }
 
-    // Check password
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      throw new AppError("Invalid email or password", 401);
+    if (!user.isActive) {
+      throw new AppError("Account is deactivated", 403);
     }
 
-    // Generate token
-    const token = generateToken(user._id, user.role);
-
-    // Remove password from response
-    user.password = undefined;
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.status(200).json({
       success: true,
-      message: "Login successful",
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        avatar: user.avatar,
+        isAdmin: user.role === "admin",
       },
     });
   } catch (error) {
@@ -90,10 +81,11 @@ export const login = async (req, res, next) => {
   }
 };
 
-// Get current user
+// Get current user info
 export const getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
+    // req.user is set by authenticate middleware
+    const user = await User.findById(req.user.userId).select("-password");
 
     if (!user) {
       throw new AppError("User not found", 404);
@@ -106,7 +98,8 @@ export const getMe = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        avatar: user.avatar,
+        isAdmin: user.role === "admin",
+        createdAt: user.createdAt,
       },
     });
   } catch (error) {
@@ -114,10 +107,96 @@ export const getMe = async (req, res, next) => {
   }
 };
 
-// Logout user
-export const logout = (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Logged out successfully",
-  });
+// Logout (optional - mainly for cleanup on frontend)
+export const logout = async (req, res, next) => {
+  try {
+    // With JWT, logout is handled on frontend by removing token
+    // This endpoint can be used for logging or cleanup if needed
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateProfile = async (req, res, next) => {
+  try {
+    const { name, email } = req.body;
+    const userId = req.user.userId;
+
+    // Check if email is already taken by another user
+    if (email) {
+      const existingUser = await User.findOne({
+        email,
+        _id: { $ne: userId },
+      });
+      if (existingUser) {
+        throw new AppError("Email already in use", 400);
+      }
+    }
+
+    // Update user
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { name, email },
+      { new: true, runValidators: true, select: "-password" }
+    );
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isAdmin: user.role === "admin",
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updatePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.userId;
+
+    // Get user with password field
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    // Verify current password
+    const isPasswordCorrect = await user.comparePassword(currentPassword);
+    if (!isPasswordCorrect) {
+      throw new AppError("Current password is incorrect", 401);
+    }
+
+    // Validate new password
+    if (newPassword.length < 6) {
+      throw new AppError("Password must be at least 6 characters", 400);
+    }
+
+    // Update password (will be hashed by pre-save hook)
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
 };
