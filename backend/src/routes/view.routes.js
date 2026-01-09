@@ -3,6 +3,6 @@ import { incrementView } from "../controllers/view.controller.js";
 
 const router = Router();
 
-router.post("/:postId/view", incrementView);
+router.post("/:postId", incrementView);
 
 export default router;

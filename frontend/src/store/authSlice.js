@@ -18,23 +18,20 @@ const initialState = {
 // ======= REGISTER =======
 export const registerUser = createAsyncThunk(
   "auth/register",
-  async (userData, { rejectWithValue, dispatch }) => {
-    console.log("Starting registration for:", userData.email);
-
+  async (userData, { rejectWithValue }) => {
     try {
       const { data } = await axios.post(`${API_URL}/auth/register`, userData);
-      console.log("Registration successful:", data.user.email);
 
-      // Save user & token
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Store token and user if registration includes auto-login
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
 
-      // Don't trigger any posts fetch here
       return data;
-    } catch (err) {
-      console.error("Registration error:", err.response?.data);
+    } catch (error) {
       return rejectWithValue(
-        err.response?.data?.message || "Registration failed"
+        error.response?.data?.message || error.message || "Registration failed"
       );
     }
   }

@@ -7,9 +7,13 @@ import categoryRoutes from "./src/routes/category.routes.js";
 import searchRoutes from "./src/routes/search.routes.js";
 import adminRoutes from "./src/routes/admin.routes.js";
 import authRoutes from "./src/routes/auth.routes.js";
+import userRoutes from "./src/routes/user.routes.js"; // Add this
 import viewRoutes from "./src/routes/view.routes.js";
 import commentRoutes from "./src/routes/comment.routes.js";
 import likeRoutes from "./src/routes/like.routes.js";
+import submissionRoutes from "./src/routes/submissionRoutes.js";
+import aiSummaryRoutes from "./src/routes/regenerateAISummary.js"; // Add this
+import sitemapRoutes from "./src/routes/sitemap.routes.js"; // Add this
 
 dotenv.config();
 
@@ -27,19 +31,23 @@ app.use(
   })
 );
 
-// Body parser middleware (BEFORE routes)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parser middleware
+app.use(express.json({ limit: "50mb" })); // Increased for image uploads
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// API Routes (ALL routes BEFORE error handlers)
+// API Routes
 app.use("/api/posts", postRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes); // Add this line
 app.use("/api/likes", likeRoutes);
 app.use("/api/comments", commentRoutes);
-app.use("/api/views", viewRoutes); // MOVED: Was after error handlers
+app.use("/api/views", viewRoutes);
+app.use("/api/submissions", submissionRoutes);
+app.use("/api/ai-summary", aiSummaryRoutes); // Add this
+app.use("/api/sitemap.xml", sitemapRoutes); // Add this
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -48,6 +56,8 @@ app.get("/health", (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || "development",
+    database:
+      mongoose.connection.readyState === 1 ? "connected" : "disconnected",
   });
 });
 
@@ -63,14 +73,18 @@ app.get("/", (req, res) => {
       search: "/api/search",
       admin: "/api/admin",
       auth: "/api/auth",
+      users: "/api/users", // Add this
       likes: "/api/likes",
       comments: "/api/comments",
       views: "/api/views",
+      submissions: "/api/submissions",
+      aiSummary: "/api/ai-summary",
+      sitemap: "/api/sitemap.xml",
     },
   });
 });
 
-// 404 handler (AFTER all routes)
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -78,7 +92,7 @@ app.use((req, res) => {
   });
 });
 
-// Global error handler (LAST)
+// Global error handler
 app.use((err, req, res, next) => {
   console.error("❌ Error:", err);
 

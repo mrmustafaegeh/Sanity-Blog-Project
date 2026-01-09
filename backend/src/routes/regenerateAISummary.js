@@ -1,39 +1,16 @@
 import express from "express";
-import sanityClient from "../lib/sanityClient.js";
-import extractText from "../utils/extractText.js";
-import hashContent from "../utils/hashContent.js";
-import { generateSummary } from "../services/aiSummary.js";
+import {
+  regenerateSummary,
+  processNewPost,
+} from "../controllers/aiSummary.controller.js";
+import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/:id", async (req, res) => {
-  try {
-    const post = await sanityClient.getDocument(req.params.id);
-    if (!post?.body) return res.status(404).json({ error: "Post not found" });
+// Regenerate summary for existing post (admin only)
+router.post("/:id", authenticate, isAdmin, regenerateSummary);
 
-    const text = extractText(post.body);
-    const hash = hashContent(text);
-
-    if (post.aiHash === hash) {
-      return res.json({ skipped: "No changes" });
-    }
-
-    const summary = await generateSummary(text);
-
-    await sanityClient
-      .patch(post._id)
-      .set({
-        aiSummary: summary,
-        aiHash: hash,
-        aiStatus: "completed",
-      })
-      .commit();
-
-    res.json({ success: true });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "Regeneration failed" });
-  }
-});
+// Webhook for new posts (can be called from submission approval)
+router.post("/webhook", authenticate, isAdmin, processNewPost);
 
 export default router;

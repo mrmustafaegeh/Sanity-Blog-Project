@@ -1,3 +1,4 @@
+// frontend/src/components/UserMenu.jsx
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,6 +10,7 @@ import {
   FileText,
   LogOut,
   Shield,
+  FileEdit,
 } from "lucide-react";
 
 export default function UserMenu() {
@@ -72,9 +74,9 @@ export default function UserMenu() {
         aria-expanded={isOpen}
         aria-label="User menu"
       >
-        {user?.profileImage ? (
+        {user?.image?.url ? (
           <img
-            src={user.profileImage}
+            src={user.image.url}
             alt={user.name}
             className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 hover:border-emerald-500 transition-colors"
           />
@@ -109,9 +111,9 @@ export default function UserMenu() {
           {/* User Info */}
           <div className="px-4 py-3 border-b border-gray-100">
             <div className="flex items-center gap-3">
-              {user?.profileImage ? (
+              {user?.image?.url ? (
                 <img
-                  src={user.profileImage}
+                  src={user.image.url}
                   alt={user.name}
                   className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
                 />
@@ -125,10 +127,16 @@ export default function UserMenu() {
                   {user?.name}
                 </p>
                 <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                {user?.role === "admin" && (
+                {(user?.role === "admin" || user?.isAdmin) && (
                   <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-gradient-to-r from-purple-100 to-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
                     <Shield className="w-3 h-3" />
                     Admin
+                  </span>
+                )}
+                {(user?.role === "author" || user?.isAuthor) && (
+                  <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
+                    <FileEdit className="w-3 h-3" />
+                    Author
                   </span>
                 )}
               </div>
@@ -194,7 +202,7 @@ export default function UserMenu() {
             </Link>
 
             {/* Admin Link */}
-            {user?.role === "admin" && (
+            {(user?.role === "admin" || user?.isAdmin) && (
               <>
                 <div className="border-t border-gray-100 mx-4 my-2"></div>
                 <Link

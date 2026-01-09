@@ -1,9 +1,9 @@
 import { useSearchParams } from "react-router-dom";
-import { useGetPostsQuery } from "@/features/posts/postsAPI";
-import PostsGrid from "@/components/PostsGrid";
-import Pagination from "@/components/Pagination";
-import SkeletonGrid from "@/components/SkeletonGrid";
-import SearchBar from "@/components/SearchBar";
+import { useGetPostsQuery } from "../api/postsAPI";
+import PostsGrid from "../features/posts/components/PostsGrid";
+import Pagination from "../features/posts/components/Pagination";
+import SkeletonGrid from "../components/SkeletonGrid";
+import SearchBar from "../components/shared/SearchBar";
 
 export default function BlogPage() {
   const [params, setParams] = useSearchParams();

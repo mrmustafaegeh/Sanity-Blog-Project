@@ -46,12 +46,54 @@ export default defineType({
     }),
 
     defineField({
+      name: 'status',
+      title: 'Status',
+      type: 'string',
+      initialValue: 'draft',
+      options: {
+        list: [
+          {title: 'Draft', value: 'draft'},
+          {title: 'Pending Review', value: 'pending'},
+          {title: 'Published', value: 'published'},
+          {title: 'Rejected', value: 'rejected'},
+        ],
+        layout: 'radio',
+      },
+      validation: (Rule) => Rule.required(),
+    }),
+
+    defineField({
+      name: 'rejectionReason',
+      title: 'Rejection Reason',
+      type: 'text',
+      hidden: ({document}) => document?.status !== 'rejected',
+      description: 'Will be shown to the author',
+    }),
+
+    defineField({
+      name: 'isUserSubmission',
+      title: 'User Submission',
+      type: 'boolean',
+      initialValue: false,
+      description: 'Mark if this is a user-submitted post',
+      readOnly: true,
+    }),
+
+    defineField({
       name: 'publishedAt',
       title: 'Published at',
       type: 'datetime',
+      hidden: ({document}) => document?.status !== 'published',
     }),
 
-    /* 🔥 NEW — FILTERING & UX */
+    defineField({
+      name: 'submittedAt',
+      title: 'Submitted at',
+      type: 'datetime',
+      readOnly: true,
+      initialValue: new Date().toISOString(),
+    }),
+
     defineField({
       name: 'difficulty',
       title: 'Difficulty',
@@ -73,7 +115,6 @@ export default defineType({
       validation: (Rule) => Rule.min(1).max(60),
     }),
 
-    /* 🧠 AI GENERATED */
     defineField({
       name: 'aiSummary',
       title: 'AI Summary',
@@ -82,11 +123,6 @@ export default defineType({
       description: 'Automatically generated AI summary',
     }),
 
-    defineField({
-      name: 'body',
-      title: 'Body',
-      type: 'blockContent',
-    }),
     defineField({
       name: 'aiStatus',
       title: 'AI Status',
@@ -102,20 +138,74 @@ export default defineType({
         ],
       },
     }),
+
+    defineField({
+      name: 'aiSummaryHistory',
+      title: 'AI Summary History',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {name: 'summary', type: 'text'},
+            {name: 'createdAt', type: 'datetime'},
+          ],
+        },
+      ],
+      readOnly: true,
+    }),
+
+    defineField({
+      name: 'body',
+      title: 'Body',
+      type: 'blockContent',
+    }),
+
+    defineField({
+      name: 'tags',
+      title: 'Tags',
+      type: 'array',
+      of: [{type: 'string'}],
+      options: {
+        layout: 'tags',
+      },
+    }),
+  ],
+
+  orderings: [
+    {
+      title: 'Submitted Date, New',
+      name: 'submittedAtDesc',
+      by: [{field: 'submittedAt', direction: 'desc'}],
+    },
+    {
+      title: 'Status',
+      name: 'statusAsc',
+      by: [{field: 'status', direction: 'asc'}],
+    },
   ],
 
   preview: {
     select: {
       title: 'title',
       author: 'author.name',
+      status: 'status',
       media: 'mainImage',
-      aiSummary: 'aiSummary',
+      submittedAt: 'submittedAt',
     },
     prepare(selection) {
-      const {title, author, aiSummary} = selection
+      const {title, author, status, submittedAt} = selection
+      const statusColors = {
+        draft: 'gray',
+        pending: 'yellow',
+        published: 'green',
+        rejected: 'red',
+      }
+
       return {
         title,
-        subtitle: aiSummary ? 'AI summarized' : author ? `by ${author}` : '',
+        subtitle: `${status.charAt(0).toUpperCase() + status.slice(1)} • by ${author || 'Anonymous'}`,
+        media: selection.media,
       }
     },
   },

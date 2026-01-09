@@ -1,18 +1,17 @@
-// frontend/src/store/apiSlice.js
+// frontend/src/api/apiSlice.js
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_URL || "http://localhost:4000/api",
+    baseUrl: API_URL,
     prepareHeaders: (headers, { getState }) => {
-      // Set Content-Type
-      headers.set("Content-Type", "application/json");
+      // Get token from auth state
+      const token = getState().auth?.token;
 
-      // Get token from Redux auth state
-      const token = getState().auth.token;
-
-      // If token exists, add it to Authorization header
+      // If we have a token, add it to headers
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -20,6 +19,20 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Posts", "Post", "Comments", "Analytics"],
+  tagTypes: [
+    "Post",
+    "Posts",
+    "Category",
+    "Categories",
+    "Comment",
+    "Comments",
+    "Submission",
+    "UserSubmissions",
+    "PendingSubmissions",
+    "AdminAnalytics",
+    "User",
+  ],
   endpoints: () => ({}),
 });
+
+export default apiSlice;

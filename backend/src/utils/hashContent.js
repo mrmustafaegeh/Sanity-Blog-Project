@@ -1,5 +1,8 @@
 import crypto from "crypto";
 
-export default function hashContent(text) {
-  return crypto.createHash("sha256").update(text).digest("hex");
-}
+export const hashContent = (content) => {
+  if (!content) return "";
+  return crypto.createHash("md5").update(content).digest("hex");
+};
+
+export default hashContent;

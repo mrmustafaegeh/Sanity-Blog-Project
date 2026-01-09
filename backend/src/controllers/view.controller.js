@@ -1,13 +1,29 @@
-import PostEngagement from "../models/PostEngagement.js";
+import Post from "../models/Post.js";
 
-export async function incrementView(req, res) {
-  const { postId } = req.params;
+// Increment view count
+export const incrementView = async (req, res) => {
+  try {
+    const { postId } = req.params;
 
-  const post = await PostEngagement.findOneAndUpdate(
-    { postId },
-    { $inc: { views: 1 } },
-    { upsert: true, new: true }
-  );
+    const post = await Post.findByIdAndUpdate(
+      postId,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
 
-  res.json({ views: post.views });
-}
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      views: post.views,
+    });
+  } catch (error) {
+    console.error("Error incrementing view:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

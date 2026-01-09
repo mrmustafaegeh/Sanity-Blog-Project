@@ -4,6 +4,6 @@ import { authenticate } from "../middleware/authMiddleware.js";
 
 const router = Router();
 
-router.post("/:postId", authenticate, toggleLike);
+router.post("/post/:postId", authenticate, toggleLike);
 
 export default router;

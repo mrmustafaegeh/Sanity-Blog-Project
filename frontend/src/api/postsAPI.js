@@ -1,215 +1,187 @@
-// frontend/src/api/postsAPI.js (or features/posts/postsAPI.js)
+// frontend/src/api/postsAPI.js
 import { apiSlice } from "../store/apiSlice";
 
 export const postsAPI = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Get all posts with pagination
+    // Get all posts with pagination and filters
     getPosts: builder.query({
-      query: ({ page = 1, limit = 10, category, sort = "newest" } = {}) => {
-        let url = `/posts?page=${page}&limit=${limit}&sort=${sort}`;
-        if (category) url += `&category=${category}`;
-        return url;
-      },
+      query: ({ page = 1, limit = 10, category, sort = "newest", search }) => ({
+        url: "/posts",
+        params: { page, limit, category, sort, search },
+      }),
       transformResponse: (response) => {
-        console.log("✅ getPosts response:", response);
-        return response;
+        // Handle paginated response
+        if (response && response.posts) {
+          return {
+            posts: response.posts,
+            pagination: response.pagination,
+          };
+        }
+        // If response is already an array, wrap it
+        if (Array.isArray(response)) {
+          return { posts: response, pagination: null };
+        }
+        return { posts: [], pagination: null };
       },
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.posts.map(({ _id }) => ({ type: "Post", id: _id })),
-              { type: "Posts", id: "LIST" },
-            ]
-          : [{ type: "Posts", id: "LIST" }],
+      providesTags: ["Posts"],
     }),
 
-    // Get single post by slug
+    // Get post by slug
     getPostBySlug: builder.query({
-      query: (slug) => `/posts/${slug}`,
-      transformResponse: (response) => {
-        console.log("✅ getPostBySlug response:", response);
-        return response;
-      },
-      providesTags: (result) =>
-        result?._id ? [{ type: "Post", id: result._id }] : [],
-    }),
-
-    // Search posts
-    searchPosts: builder.query({
-      query: (q) => `/search?q=${encodeURIComponent(q)}`,
-      transformResponse: (response) => {
-        console.log("✅ searchPosts response:", response);
-        return response.posts || [];
-      },
-      // Cache search results separately
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ _id }) => ({ type: "Post", id: _id })),
-              { type: "Search", id: "LIST" },
-            ]
-          : [{ type: "Search", id: "LIST" }],
+      query: (slug) => `/posts/slug/${slug}`,
+      providesTags: (result, error, slug) => [{ type: "Post", id: slug }],
     }),
 
     // Get recent posts
     getRecentPosts: builder.query({
-      query: (limit = 3) => `/posts/recent?limit=${limit}`,
+      query: (limit = 6) => `/posts/recent?limit=${limit}`,
       transformResponse: (response) => {
-        console.log("✅ getRecentPosts response:", response);
-        return response.posts || [];
+        // Extract array from response
+        if (response && response.posts) {
+          return response.posts;
+        }
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return [];
       },
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ _id }) => ({ type: "Post", id: _id })),
-              { type: "Recent", id: "LIST" },
-            ]
-          : [{ type: "Recent", id: "LIST" }],
+      providesTags: ["Posts"],
+    }),
+
+    // Get featured posts
+    getFeaturedPosts: builder.query({
+      query: () => "/posts/featured",
+      transformResponse: (response) => {
+        // Extract array from response
+        if (response && response.posts) {
+          return response.posts;
+        }
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return [];
+      },
+      providesTags: ["Posts"],
+    }),
+
+    // Get popular posts
+    getPopularPosts: builder.query({
+      query: (limit = 3) => `/posts/popular?limit=${limit}`,
+      transformResponse: (response) => {
+        // Extract array from response
+        if (response && response.posts) {
+          return response.posts;
+        }
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return [];
+      },
+      providesTags: ["Posts"],
+    }),
+
+    // Get related posts
+    getRelatedPosts: builder.query({
+      query: ({ postId, limit = 3 }) =>
+        `/posts/related/${postId}?limit=${limit}`,
+      transformResponse: (response) => {
+        // Extract array from response
+        if (response && response.posts) {
+          return response.posts;
+        }
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return [];
+      },
+      providesTags: ["Posts"],
     }),
 
     // Get categories
     getCategories: builder.query({
-      query: ({ page = 1, limit = 8 }) =>
-        `/categories?page=${page}&limit=${limit}`,
+      query: ({ page = 1, limit = 8 } = {}) => ({
+        url: "/categories",
+        params: { page, limit },
+      }),
       transformResponse: (response) => {
-        console.log("✅ getCategories response:", response);
-        return response;
+        // Extract array from response
+        if (response && response.categories) {
+          return response.categories;
+        }
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return [];
       },
       providesTags: ["Categories"],
     }),
 
-    // Get related posts (NEW)
-    getRelatedPosts: builder.query({
-      query: ({ excludeId, categoryIds = [], limit = 3 }) => {
-        const params = new URLSearchParams({
-          excludeId,
-          limit,
-        });
-
-        if (categoryIds.length > 0) {
-          params.append("categories", categoryIds.join(","));
-        }
-
-        return `/posts/related?${params.toString()}`;
-      },
-      transformResponse: (response) => {
-        console.log("✅ getRelatedPosts response:", response);
-        return response.posts || [];
-      },
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ _id }) => ({ type: "Post", id: _id })),
-              { type: "Related", id: "LIST" },
-            ]
-          : [{ type: "Related", id: "LIST" }],
+    // Get category by slug
+    getCategoryBySlug: builder.query({
+      query: (slug) => `/categories/${slug}`,
+      providesTags: (result, error, slug) => [{ type: "Category", id: slug }],
     }),
 
-    // Get posts by category (NEW)
-    getPostsByCategory: builder.query({
-      query: ({ categoryId, page = 1, limit = 10 }) =>
-        `/posts/category/${categoryId}?page=${page}&limit=${limit}`,
-      transformResponse: (response) => {
-        console.log("✅ getPostsByCategory response:", response);
-        return response;
-      },
-      providesTags: (result, error, arg) =>
-        result
-          ? [
-              ...result.posts.map(({ _id }) => ({ type: "Post", id: _id })),
-              { type: "CategoryPosts", id: arg.categoryId },
-            ]
-          : [{ type: "CategoryPosts", id: arg?.categoryId }],
+    // Increment view count
+    incrementViewCount: builder.mutation({
+      query: (postId) => ({
+        url: `/posts/${postId}/view`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (result, error, postId) => [
+        { type: "Post", id: postId },
+      ],
     }),
 
-    // Get featured posts (NEW)
-    getFeaturedPosts: builder.query({
-      query: (limit = 1) => `/posts/featured?limit=${limit}`,
-      transformResponse: (response) => {
-        console.log("✅ getFeaturedPosts response:", response);
-        return response.posts || [];
-      },
-      providesTags: ["Featured"],
-    }),
-
-    // Get popular posts (NEW)
-    getPopularPosts: builder.query({
-      query: (limit = 5) => `/posts/popular?limit=${limit}`,
-      transformResponse: (response) => {
-        console.log("✅ getPopularPosts response:", response);
-        return response.posts || [];
-      },
-      providesTags: ["Popular"],
-    }),
-
-    // Get posts by author (NEW)
-    getPostsByAuthor: builder.query({
-      query: ({ authorId, page = 1, limit = 10 }) =>
-        `/posts/author/${authorId}?page=${page}&limit=${limit}`,
-      transformResponse: (response) => {
-        console.log("✅ getPostsByAuthor response:", response);
-        return response;
-      },
-      providesTags: (result, error, arg) =>
-        result
-          ? [
-              ...result.posts.map(({ _id }) => ({ type: "Post", id: _id })),
-              { type: "AuthorPosts", id: arg.authorId },
-            ]
-          : [{ type: "AuthorPosts", id: arg?.authorId }],
-    }),
-
-    // Create new post (NEW - for admin)
+    // Create post
     createPost: builder.mutation({
       query: (postData) => ({
         url: "/posts",
         method: "POST",
         body: postData,
       }),
-      invalidatesTags: ["Posts", "Recent", "Featured"],
+      invalidatesTags: ["Posts", "Submission"],
     }),
 
-    // Update post (NEW - for admin)
+    // Update post
     updatePost: builder.mutation({
-      query: ({ id, ...postData }) => ({
+      query: ({ id, ...data }) => ({
         url: `/posts/${id}`,
         method: "PUT",
-        body: postData,
+        body: data,
       }),
-      invalidatesTags: (result, error, arg) => [
-        { type: "Post", id: arg.id },
-        "Posts",
-        "Recent",
-        "Featured",
-      ],
+      invalidatesTags: (result, error, { id }) => [{ type: "Post", id }],
     }),
 
-    // Delete post (NEW - for admin)
+    // Delete post
     deletePost: builder.mutation({
       query: (id) => ({
         url: `/posts/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Posts", "Recent", "Featured"],
+      invalidatesTags: ["Posts"],
     }),
 
-    // Increment view count (NEW)
-    incrementViewCount: builder.mutation({
-      query: (postId) => ({
-        url: `/posts/${postId}/views`,
-        method: "POST",
+    // Search posts
+    searchPosts: builder.query({
+      query: ({ q, page = 1, limit = 10 }) => ({
+        url: "/search",
+        params: { q, page, limit },
       }),
-      // Don't invalidate cache, just update view count in background
-    }),
-    // ❤️ LIKE / UNLIKE
-    toggleLike: builder.mutation({
-      query: (postId) => ({
-        url: `/likes/${postId}`,
-        method: "POST",
-      }),
-      invalidatesTags: (result, error, postId) => [
-        { type: "Post", id: postId },
-      ],
+      transformResponse: (response) => {
+        // Handle search results
+        if (response && response.posts) {
+          return {
+            posts: response.posts,
+            pagination: response.pagination,
+          };
+        }
+        if (Array.isArray(response)) {
+          return { posts: response, pagination: null };
+        }
+        return { posts: [], pagination: null };
+      },
+      providesTags: ["Posts"],
     }),
   }),
 });
@@ -217,17 +189,15 @@ export const postsAPI = apiSlice.injectEndpoints({
 export const {
   useGetPostsQuery,
   useGetPostBySlugQuery,
-  useSearchPostsQuery,
   useGetRecentPostsQuery,
-  useGetCategoriesQuery,
-  useGetRelatedPostsQuery,
-  useGetPostsByCategoryQuery,
   useGetFeaturedPostsQuery,
   useGetPopularPostsQuery,
-  useGetPostsByAuthorQuery,
+  useGetRelatedPostsQuery,
+  useGetCategoriesQuery,
+  useGetCategoryBySlugQuery,
+  useIncrementViewCountMutation,
   useCreatePostMutation,
   useUpdatePostMutation,
   useDeletePostMutation,
-  useIncrementViewCountMutation,
-  useToggleLikeMutation,
+  useSearchPostsQuery,
 } = postsAPI;

@@ -10,12 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@portabletext/react": "^6.0.2",
     "@reduxjs/toolkit": "^2.11.2",
     "@sanity/block-content-to-react": "^3.0.0",
     "@sanity/client": "^7.13.2",
     "@sanity/image-url": "^2.0.2",
     "@tailwindcss/vite": "^4.1.12",
     "axios": "^1.13.2",
+    "date-fns": "^4.1.0",
     "lucide-react": "^0.540.0",
     "prismjs": "^1.30.0",
     "react": "^19.2.3",
@@ -25,6 +27,7 @@
     "react-hot-toast": "^2.6.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.11.0",
+    "react-toastify": "^11.0.5",
     "sanity": "^5.1.0"
   },
   "devDependencies": {
