@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import Post from "../src/models/Post.js";
-import User from "../src/models/User.js";
-import Category from "../src/models/Category.js";
+import Post from "../models/Post.js";
+import User from "../models/User.js";
+import Category from "../models/Category.js";
 import dotenv from "dotenv";
 import { createObjectCsvWriter } from "csv-writer";
 import fs from "fs";

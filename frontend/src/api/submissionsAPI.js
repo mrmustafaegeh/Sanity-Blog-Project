@@ -20,7 +20,6 @@ export const submissionsAPI = apiSlice.injectEndpoints({
         params: { page, limit, status },
       }),
       transformResponse: (response) => {
-        // Extract array from response
         if (response && response.submissions) {
           return response.submissions;
         }
@@ -36,7 +35,6 @@ export const submissionsAPI = apiSlice.injectEndpoints({
     getPendingSubmissions: builder.query({
       query: () => "/submissions/admin/pending",
       transformResponse: (response) => {
-        // Extract array from response
         if (response && response.submissions) {
           return response.submissions;
         }

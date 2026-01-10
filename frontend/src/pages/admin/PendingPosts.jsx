@@ -20,23 +20,43 @@ export default function PendingPosts() {
     data: pendingData,
     isLoading,
     refetch,
+    error: fetchError,
   } = useGetPendingSubmissionsQuery();
+
   const [approveSubmission, { isLoading: isApproving }] =
     useApproveSubmissionMutation();
   const [rejectSubmission, { isLoading: isRejecting }] =
     useRejectSubmissionMutation();
 
   const handleApprove = async (submissionId) => {
-    if (!window.confirm("Approve this submission and publish to Sanity?"))
+    console.log("🔍 Approving submission:", submissionId);
+
+    if (!window.confirm("Approve this submission and publish?")) {
       return;
+    }
 
     try {
-      await approveSubmission(submissionId).unwrap();
-      toast.success("Submission approved and published!");
+      const result = await approveSubmission(submissionId).unwrap();
+      console.log("✅ Approval successful:", result);
+      toast.success(result.message || "Submission approved and published!");
       refetch();
     } catch (error) {
-      console.error("Approval error:", error);
-      toast.error(error?.data?.message || "Failed to approve submission");
+      console.error("❌ Approval error:", error);
+
+      if (error.status) {
+        console.error("Status:", error.status);
+      }
+      if (error.data) {
+        console.error("Error data:", error.data);
+      }
+
+      const errorMessage =
+        error?.data?.message ||
+        error?.data?.error ||
+        error?.message ||
+        "Failed to approve submission";
+
+      toast.error(errorMessage);
     }
   };
 
@@ -46,23 +66,43 @@ export default function PendingPosts() {
       return;
     }
 
+    console.log("🔍 Rejecting submission:", {
+      id: selectedSubmission._id,
+      reason: rejectReason,
+    });
+
     try {
-      await rejectSubmission({
-        submissionId: selectedSubmission._id,
+      const result = await rejectSubmission({
+        id: selectedSubmission._id,
         reason: rejectReason,
       }).unwrap();
 
-      toast.success("Submission rejected");
+      console.log("✅ Rejection successful:", result);
+      toast.success(result.message || "Submission rejected");
       setShowRejectModal(false);
       setRejectReason("");
       setSelectedSubmission(null);
       refetch();
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to reject submission");
+      console.error("❌ Rejection error:", error);
+
+      if (error.status) {
+        console.error("Status:", error.status);
+      }
+      if (error.data) {
+        console.error("Error data:", error.data);
+      }
+
+      const errorMessage =
+        error?.data?.message ||
+        error?.data?.error ||
+        error?.message ||
+        "Failed to reject submission";
+
+      toast.error(errorMessage);
     }
   };
 
-  // Check if user is admin
   if (!user?.isAdmin && user?.role !== "admin") {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -87,14 +127,31 @@ export default function PendingPosts() {
     );
   }
 
-  const submissions = pendingData || [];
+  if (fetchError) {
+    console.error("❌ Fetch error:", fetchError);
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
+          <p className="text-gray-600">
+            {fetchError?.data?.message || "Failed to load submissions"}
+          </p>
+          <button
+            onClick={refetch}
+            className="mt-4 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  console.log("📦 Pending submissions data:", submissions);
+  const submissions = pendingData || [];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Pending Submissions
@@ -108,13 +165,11 @@ export default function PendingPosts() {
               <span className="font-medium">{submissions.length} Pending</span>
             </div>
             <div className="text-sm text-gray-600">
-              These submissions are stored in MongoDB and will be published to
-              Sanity upon approval
+              These submissions will be published upon approval
             </div>
           </div>
         </div>
 
-        {/* Submissions List */}
         {submissions.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
             <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -130,14 +185,12 @@ export default function PendingPosts() {
                 key={submission._id}
                 className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
               >
-                {/* Submission Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">
                       {submission.title}
                     </h3>
                     <div className="flex items-center space-x-4 text-sm text-gray-600">
-                      {/* Author Info */}
                       <div className="flex items-center">
                         <User className="w-4 h-4 mr-1" />
                         {submission.userId?.name || "Unknown User"}
@@ -145,38 +198,30 @@ export default function PendingPosts() {
                           ({submission.userId?.email || "No email"})
                         </span>
                       </div>
-
-                      {/* Submission Date */}
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 mr-1" />
                         {formatDistanceToNow(new Date(submission.submittedAt), {
                           addSuffix: true,
                         })}
                       </div>
-
-                      {/* Reading Time */}
                       <div className="flex items-center">
                         <Clock className="w-4 h-4 mr-1" />
                         {submission.readingTime || 5} min read
                       </div>
                     </div>
                   </div>
-
-                  {/* Status Badge */}
                   <span className="inline-flex items-center px-3 py-1.5 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
                     <Clock className="w-3 h-3 mr-1" />
                     Pending Review
                   </span>
                 </div>
 
-                {/* Excerpt */}
                 {submission.excerpt && (
                   <p className="text-gray-700 mb-4 line-clamp-2 italic border-l-4 border-yellow-400 pl-4 py-1">
                     "{submission.excerpt}"
                   </p>
                 )}
 
-                {/* Tags & Categories */}
                 <div className="flex flex-wrap gap-2 mb-4">
                   {submission.tags?.map((tag, idx) => (
                     <span
@@ -187,7 +232,6 @@ export default function PendingPosts() {
                       {tag}
                     </span>
                   ))}
-
                   {submission.categories?.length > 0 && (
                     <div className="text-xs text-gray-500">
                       Categories: {submission.categories.length}
@@ -195,7 +239,6 @@ export default function PendingPosts() {
                   )}
                 </div>
 
-                {/* Difficulty & Stats */}
                 <div className="flex items-center space-x-4 text-sm text-gray-600 mb-4">
                   <span
                     className={`px-2 py-1 rounded ${
@@ -212,7 +255,6 @@ export default function PendingPosts() {
                   <span>Content: {submission.content?.length || 0} chars</span>
                 </div>
 
-                {/* Actions */}
                 <div className="flex items-center space-x-3 pt-4 border-t">
                   <button
                     onClick={() => setSelectedSubmission(submission)}
@@ -221,7 +263,6 @@ export default function PendingPosts() {
                     <Eye className="w-4 h-4 mr-2" />
                     Preview Content
                   </button>
-
                   <button
                     onClick={() => handleApprove(submission._id)}
                     disabled={isApproving}
@@ -230,7 +271,6 @@ export default function PendingPosts() {
                     <Check className="w-4 h-4 mr-2" />
                     {isApproving ? "Approving..." : "Approve & Publish"}
                   </button>
-
                   <button
                     onClick={() => {
                       setSelectedSubmission(submission);
@@ -249,7 +289,6 @@ export default function PendingPosts() {
         )}
       </div>
 
-      {/* Preview Modal */}
       {selectedSubmission && !showRejectModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
@@ -273,7 +312,6 @@ export default function PendingPosts() {
                 <X className="w-6 h-6" />
               </button>
             </div>
-
             {selectedSubmission.excerpt && (
               <div className="mb-6 p-4 bg-blue-50 rounded-lg">
                 <h3 className="font-medium text-blue-800 mb-2">Excerpt:</h3>
@@ -282,7 +320,6 @@ export default function PendingPosts() {
                 </p>
               </div>
             )}
-
             <div className="prose max-w-none">
               <div
                 dangerouslySetInnerHTML={{ __html: selectedSubmission.content }}
@@ -292,7 +329,6 @@ export default function PendingPosts() {
         </div>
       )}
 
-      {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6">
