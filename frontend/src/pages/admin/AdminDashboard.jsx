@@ -64,7 +64,7 @@ export default function AdminDashboard() {
     if (confirmDelete) {
       try {
         await deletePost(id).unwrap();
-      } catch (error) {
+      } catch {
         alert("Failed to delete post");
       }
     }

@@ -70,7 +70,7 @@ export default function PostDetail() {
       await toggleLike(post._id).unwrap();
       setIsLiked(!isLiked);
       toast.success(isLiked ? "Removed from likes" : "Added to likes");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update like");
     }
   };
@@ -88,7 +88,7 @@ export default function PostDetail() {
       toast.success(
         isBookmarked ? "Removed from bookmarks" : "Added to bookmarks"
       );
-    } catch (error) {
+    } catch {
       toast.error("Failed to update bookmark");
     }
   };

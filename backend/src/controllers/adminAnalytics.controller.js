@@ -2,6 +2,7 @@ import Post from "../models/Post.js";
 import User from "../models/User.js";
 import Comment from "../models/Comment.js";
 import Submission from "../models/Submission.js";
+import Category from "../models/Category.js";
 
 // Get admin analytics
 export const getAdminAnalytics = async (req, res) => {

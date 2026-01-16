@@ -7,10 +7,8 @@ export const getAllPosts = () =>
     mainImage{asset->{url}}
   }`);
 
-import client from "../lib/client";
-
+// Fetch single post by slug
 /**
- * Fetch single post by slug
  * Returns: null | post object
  */
 export async function getPostBySlug(slug) {

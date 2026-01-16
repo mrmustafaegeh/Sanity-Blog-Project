@@ -15,6 +15,7 @@ export default function PostCard({ post, priority = false }) {
       <div className="relative overflow-hidden h-48">
         <img
           src={
+            post.mainImage?.url ||
             post.mainImage?.asset?.url ||
             "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
           }

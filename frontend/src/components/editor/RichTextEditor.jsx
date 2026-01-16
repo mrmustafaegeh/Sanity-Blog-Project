@@ -25,7 +25,6 @@ export default function RichTextEditor({
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [linkText, setLinkText] = useState("");
-  const [selectedText, setSelectedText] = useState("");
 
   useEffect(() => {
     if (editorRef.current) {
@@ -46,7 +45,7 @@ export default function RichTextEditor({
   const handleFormat = (command) => {
     try {
       execCommand(command);
-    } catch (error) {
+    } catch {
       toast.error("Formatting error");
     }
   };
@@ -58,7 +57,6 @@ export default function RichTextEditor({
       return;
     }
 
-    setSelectedText(selection.toString());
     setLinkText(selection.toString());
     setIsLinkModalOpen(true);
   };

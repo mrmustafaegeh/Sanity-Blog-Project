@@ -29,6 +29,7 @@ export const postsAPI = apiSlice.injectEndpoints({
     // Get post by slug
     getPostBySlug: builder.query({
       query: (slug) => `/posts/slug/${slug}`,
+      transformResponse: (response) => response.post,
       providesTags: (result, error, slug) => [{ type: "Post", id: slug }],
     }),
 
@@ -119,7 +120,7 @@ export const postsAPI = apiSlice.injectEndpoints({
     // Get category by slug
     getCategoryBySlug: builder.query({
       query: (slug) => `/categories/${slug}`,
-      providesTags: (result, error, slug) => [{ type: "Category", id: slug }],
+      providesTags: (_result, _error, slug) => [{ type: "Category", id: slug }],
     }),
 
     // Increment view count
@@ -128,7 +129,7 @@ export const postsAPI = apiSlice.injectEndpoints({
         url: `/posts/${postId}/view`,
         method: "PATCH",
       }),
-      invalidatesTags: (result, error, postId) => [
+      invalidatesTags: (_result, _error, postId) => [
         { type: "Post", id: postId },
       ],
     }),
@@ -160,6 +161,16 @@ export const postsAPI = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: ["Posts"],
+    }),
+
+    toggleLike: builder.mutation({
+      query: (postId) => ({
+        url: `/posts/${postId}/like`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, postId) => [
+        { type: "Post", id: postId },
+      ],
     }),
 
     // Search posts
@@ -200,4 +211,5 @@ export const {
   useUpdatePostMutation,
   useDeletePostMutation,
   useSearchPostsQuery,
+  useToggleLikeMutation,
 } = postsAPI;

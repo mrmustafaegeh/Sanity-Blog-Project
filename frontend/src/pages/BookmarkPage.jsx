@@ -23,6 +23,127 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+// Available categories/tags (you can fetch these from API)
+const availableTags = [
+  "Technology",
+  "Programming",
+  "Design",
+  "AI",
+  "Web Development",
+  "Mobile",
+  "DevOps",
+  "Security",
+  "Productivity",
+  "Career",
+];
+
+// Mock data - Replace with API call
+const mockBookmarks = [
+  {
+    id: "1",
+    title:
+      "The Hidden Power of Offline AI: What Happens When the Internet Goes Dark?",
+    excerpt:
+      "Discover how AI models can function without internet connectivity and their real-world applications...",
+    author: "Alex Johnson",
+    authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
+    readTime: "8 min read",
+    date: "2024-01-15",
+    tags: ["AI", "Technology", "Future"],
+    image:
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+    isRead: true,
+    likes: 245,
+    comments: 42,
+    views: 1250,
+  },
+  {
+    id: "2",
+    title: "10 Tips for Improving Your Frontend Development Skills in 2024",
+    excerpt:
+      "Essential techniques and resources to level up your frontend development game...",
+    author: "Sarah Miller",
+    authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
+    readTime: "6 min read",
+    date: "2024-01-10",
+    tags: ["Web Development", "Programming", "Frontend"],
+    image:
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+    isRead: false,
+    likes: 189,
+    comments: 31,
+    views: 890,
+  },
+  {
+    id: "3",
+    title: "Building Scalable APIs with Node.js and Express",
+    excerpt:
+      "Learn how to design and build robust APIs that can handle millions of requests...",
+    author: "Mike Chen",
+    authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike",
+    readTime: "12 min read",
+    date: "2024-01-05",
+    tags: ["Backend", "Node.js", "API"],
+    image:
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+    isRead: true,
+    likes: 312,
+    comments: 56,
+    views: 2100,
+  },
+  {
+    id: "4",
+    title: "The Future of React: What's Coming in 2024",
+    excerpt:
+      "Explore the upcoming features and improvements in the React ecosystem...",
+    author: "Emma Wilson",
+    authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emma",
+    readTime: "5 min read",
+    date: "2024-01-03",
+    tags: ["React", "Frontend", "JavaScript"],
+    image:
+      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+    isRead: false,
+    likes: 167,
+    comments: 28,
+    views: 750,
+  },
+  {
+    id: "5",
+    title: "Mastering TypeScript: Advanced Patterns and Techniques",
+    excerpt:
+      "Take your TypeScript skills to the next level with these advanced patterns...",
+    author: "David Park",
+    authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
+    readTime: "15 min read",
+    date: "2023-12-28",
+    tags: ["TypeScript", "Programming", "Best Practices"],
+    image:
+      "https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+    isRead: true,
+    likes: 421,
+    comments: 89,
+    views: 3200,
+  },
+  {
+    id: "6",
+    title: "The Art of Clean Code: Writing Maintainable JavaScript",
+    excerpt:
+      "Principles and patterns for writing JavaScript code that's easy to maintain...",
+    author: "Lisa Wong",
+    authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa",
+    readTime: "10 min read",
+    date: "2023-12-20",
+    tags: ["JavaScript", "Clean Code", "Best Practices"],
+    image:
+      "https://images.unsplash.com/photo-1581276879432-15e50529f34b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+    isRead: false,
+    likes: 298,
+    comments: 67,
+    views: 1950,
+  },
+];
+
 export default function BookmarkPage() {
   const { user, token } = useSelector((state) => state.auth);
   const [bookmarks, setBookmarks] = useState([]);
@@ -38,126 +159,7 @@ export default function BookmarkPage() {
     byCategory: {},
   });
 
-  // Available categories/tags (you can fetch these from API)
-  const availableTags = [
-    "Technology",
-    "Programming",
-    "Design",
-    "AI",
-    "Web Development",
-    "Mobile",
-    "DevOps",
-    "Security",
-    "Productivity",
-    "Career",
-  ];
 
-  // Mock data - Replace with API call
-  const mockBookmarks = [
-    {
-      id: "1",
-      title:
-        "The Hidden Power of Offline AI: What Happens When the Internet Goes Dark?",
-      excerpt:
-        "Discover how AI models can function without internet connectivity and their real-world applications...",
-      author: "Alex Johnson",
-      authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
-      readTime: "8 min read",
-      date: "2024-01-15",
-      tags: ["AI", "Technology", "Future"],
-      image:
-        "https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-      isRead: true,
-      likes: 245,
-      comments: 42,
-      views: 1250,
-    },
-    {
-      id: "2",
-      title: "10 Tips for Improving Your Frontend Development Skills in 2024",
-      excerpt:
-        "Essential techniques and resources to level up your frontend development game...",
-      author: "Sarah Miller",
-      authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-      readTime: "6 min read",
-      date: "2024-01-10",
-      tags: ["Web Development", "Programming", "Frontend"],
-      image:
-        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-      isRead: false,
-      likes: 189,
-      comments: 31,
-      views: 890,
-    },
-    {
-      id: "3",
-      title: "Building Scalable APIs with Node.js and Express",
-      excerpt:
-        "Learn how to design and build robust APIs that can handle millions of requests...",
-      author: "Mike Chen",
-      authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike",
-      readTime: "12 min read",
-      date: "2024-01-05",
-      tags: ["Backend", "Node.js", "API"],
-      image:
-        "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-      isRead: true,
-      likes: 312,
-      comments: 56,
-      views: 2100,
-    },
-    {
-      id: "4",
-      title: "The Future of React: What's Coming in 2024",
-      excerpt:
-        "Explore the upcoming features and improvements in the React ecosystem...",
-      author: "Emma Wilson",
-      authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emma",
-      readTime: "5 min read",
-      date: "2024-01-03",
-      tags: ["React", "Frontend", "JavaScript"],
-      image:
-        "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-      isRead: false,
-      likes: 167,
-      comments: 28,
-      views: 750,
-    },
-    {
-      id: "5",
-      title: "Mastering TypeScript: Advanced Patterns and Techniques",
-      excerpt:
-        "Take your TypeScript skills to the next level with these advanced patterns...",
-      author: "David Park",
-      authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
-      readTime: "15 min read",
-      date: "2023-12-28",
-      tags: ["TypeScript", "Programming", "Best Practices"],
-      image:
-        "https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-      isRead: true,
-      likes: 421,
-      comments: 89,
-      views: 3200,
-    },
-    {
-      id: "6",
-      title: "The Art of Clean Code: Writing Maintainable JavaScript",
-      excerpt:
-        "Principles and patterns for writing JavaScript code that's easy to maintain...",
-      author: "Lisa Wong",
-      authorAvatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa",
-      readTime: "10 min read",
-      date: "2023-12-20",
-      tags: ["JavaScript", "Clean Code", "Best Practices"],
-      image:
-        "https://images.unsplash.com/photo-1581276879432-15e50529f34b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-      isRead: false,
-      likes: 298,
-      comments: 67,
-      views: 1950,
-    },
-  ];
 
   useEffect(() => {
     // Simulate API call

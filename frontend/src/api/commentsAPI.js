@@ -27,7 +27,7 @@ export const commentsAPI = apiSlice.injectEndpoints({
         method: "PUT",
         body: { content },
       }),
-      invalidatesTags: (result, error, { id }) => ["Comments"],
+      invalidatesTags: (_result, _error, id) => [{ type: "Post", id }],
     }),
 
     deleteComment: builder.mutation({

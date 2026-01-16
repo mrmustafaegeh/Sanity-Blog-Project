@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./src/config/database.js";
@@ -11,8 +12,8 @@ import userRoutes from "./src/routes/user.routes.js"; // Add this
 import viewRoutes from "./src/routes/view.routes.js";
 import commentRoutes from "./src/routes/comment.routes.js";
 import likeRoutes from "./src/routes/like.routes.js";
-import submissionRoutes from "./src/routes/submissionRoutes.js";
-import aiSummaryRoutes from "./src/routes/regenerateAISummary.js"; // Add this
+import submissionRoutes from "./src/routes/submission.routes.js";
+import aiSummaryRoutes from "./src/routes/aiSummary.routes.js"; // Add this
 import sitemapRoutes from "./src/routes/sitemap.routes.js"; // Add this
 
 dotenv.config();

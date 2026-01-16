@@ -1,8 +1,8 @@
 // frontend/src/router/index.jsx
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/HomePage";
-import Blog from "./pages/BlogPage";
-import PostDetail from "./pages/PostDetail";
+import BlogListPage from "./pages/PostsListPage";
+import SinglePostPage from "./pages/SinglePostPage";
 import Categories from "./pages/CategoriesPage";
 import Login from "./pages/form/Login";
 import Register from "./pages/form/Register";
@@ -19,8 +19,11 @@ export default function AppRouter() {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Home />} />
-      <Route path="/blog" element={<Blog />} />
-      <Route path="/posts/:slug" element={<PostDetail />} />
+      <Route path="/blog" element={<BlogListPage />} />
+
+      {/* FIXED: Changed from /posts/:slug to /blog/:slug */}
+      <Route path="/blog/:slug" element={<SinglePostPage />} />
+
       <Route path="/categories" element={<Categories />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />

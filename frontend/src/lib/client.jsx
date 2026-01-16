@@ -27,7 +27,7 @@ export const urlFor = (source) => {
 };
 
 // Helper function for generating image URLs with options
-export const getImageUrl = (source, options = {}) => {
+export const getImageUrl = (source) => {
   return imageBuilder.image(source).auto("format").fit("max").url();
 };
 

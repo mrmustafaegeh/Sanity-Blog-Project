@@ -67,6 +67,7 @@ export default function FeaturedPost({ post }) {
             <div className="absolute -inset-4 bg-gradient-to-r from-emerald-400 to-teal-300 rounded-2xl blur-xl opacity-20" />
             <img
               src={
+                post.mainImage?.url ||
                 post.mainImage?.asset?.url ||
                 "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
               }

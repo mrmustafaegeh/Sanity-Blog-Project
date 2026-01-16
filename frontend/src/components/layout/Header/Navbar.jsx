@@ -1,5 +1,5 @@
 // frontend/src/components/layout/Navbar.jsx
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Search, Menu, X, PlusCircle, FileText, Shield } from "lucide-react";
@@ -8,7 +8,6 @@ import UserMenu from "../../UserMenu";
 
 export default function Navbar() {
   const location = useLocation();
-  const navigate = useNavigate();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);

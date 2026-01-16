@@ -34,8 +34,6 @@ export default function HomePage() {
 
   const {
     data: popularPosts = [],
-    isLoading: popularLoading,
-    isError: popularError,
   } = useGetPopularPostsQuery(3);
 
   const featuredPost = featuredPosts[0] || recentPosts[0] || null;
