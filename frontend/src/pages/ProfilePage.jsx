@@ -13,8 +13,11 @@ import {
   Shield,
   Calendar,
   CheckCircle,
-  Upload,
   Loader2,
+  Sparkles,
+  TrendingUp,
+  MessageCircle,
+  Heart,
 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -29,13 +32,11 @@ export default function ProfilePage() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [previewImage, setPreviewImage] = useState(user?.profileImage || null);
 
-  // Profile form state
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
   });
 
-  // Password form state
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -58,26 +59,22 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       setMessage({ type: "error", text: "Please select an image file" });
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setMessage({ type: "error", text: "Image must be less than 5MB" });
       return;
     }
 
-    // Show preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreviewImage(reader.result);
     };
     reader.readAsDataURL(file);
 
-    // Upload image
     setUploadingImage(true);
     setMessage({ type: "", text: "" });
 
@@ -102,13 +99,11 @@ export default function ProfilePage() {
         throw new Error(data.message || "Failed to upload image");
       }
 
-      // Update Redux state with new image URL
       dispatch(updateUser({ profileImage: data.imageUrl }));
-
       setMessage({ type: "success", text: "Profile picture updated!" });
     } catch (error) {
       setMessage({ type: "error", text: error.message });
-      setPreviewImage(user?.profileImage || null); // Revert preview
+      setPreviewImage(user?.profileImage || null);
     } finally {
       setUploadingImage(false);
     }
@@ -138,9 +133,7 @@ export default function ProfilePage() {
         throw new Error(data.message || "Failed to update profile");
       }
 
-      // Update Redux state with new user info
       dispatch(updateUser(data.user));
-
       setMessage({ type: "success", text: "Profile updated successfully!" });
       setIsEditing(false);
     } catch (error) {
@@ -226,30 +219,34 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
+
+      <div className="relative z-10 max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-8 mb-6 text-white">
+        <div className="bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 backdrop-blur-xl rounded-2xl p-8 mb-6 border border-emerald-500/30 shadow-xl">
           <div className="flex items-center gap-6">
             <div className="relative">
-              {/* Profile Picture */}
               {previewImage ? (
                 <img
                   src={previewImage}
                   alt={user?.name}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-white/20 backdrop-blur-sm"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-emerald-500/50 shadow-lg"
                 />
               ) : (
-                <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-4xl font-bold backdrop-blur-sm border-4 border-white/20">
+                <div className="w-24 h-24 bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 backdrop-blur-sm rounded-full flex items-center justify-center text-4xl font-bold border-4 border-emerald-500/50 text-white">
                   {getInitials(user?.name)}
                 </div>
               )}
 
-              {/* Upload Button */}
               <button
                 onClick={handleImageClick}
                 disabled={uploadingImage}
-                className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full flex items-center justify-center text-emerald-600 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                className="absolute bottom-0 right-0 w-8 h-8 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center text-white hover:scale-110 transition-transform disabled:opacity-50 shadow-lg"
                 title="Change profile picture"
               >
                 {uploadingImage ? (
@@ -259,7 +256,6 @@ export default function ProfilePage() {
                 )}
               </button>
 
-              {/* Hidden File Input */}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -270,13 +266,13 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-1">{user?.name}</h1>
-              <p className="text-emerald-100 flex items-center gap-2">
+              <h1 className="text-3xl font-bold text-white mb-1">{user?.name}</h1>
+              <p className="text-emerald-400 flex items-center gap-2">
                 <Mail className="w-4 h-4" />
                 {user?.email}
               </p>
               {user?.role === "admin" && (
-                <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 bg-white/20 rounded-full text-sm backdrop-blur-sm">
+                <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 bg-purple-500/20 backdrop-blur-sm rounded-full text-sm border border-purple-500/30 text-purple-400">
                   <Shield className="w-4 h-4" />
                   Admin
                 </div>
@@ -288,10 +284,10 @@ export default function ProfilePage() {
         {/* Message Alert */}
         {message.text && (
           <div
-            className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
+            className={`mb-6 p-4 rounded-xl flex items-center gap-2 backdrop-blur-xl ${
               message.type === "success"
-                ? "bg-green-50 text-green-800 border border-green-200"
-                : "bg-red-50 text-red-800 border border-red-200"
+                ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                : "bg-red-500/10 text-red-400 border border-red-500/20"
             }`}
           >
             {message.type === "success" && <CheckCircle className="w-5 h-5" />}
@@ -301,15 +297,15 @@ export default function ProfilePage() {
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Profile Information Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-white">
                 Profile Information
               </h2>
               {!isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors border border-emerald-500/20"
                 >
                   <Edit2 className="w-4 h-4" />
                   Edit
@@ -320,7 +316,7 @@ export default function ProfilePage() {
             {isEditing ? (
               <form onSubmit={handleUpdateProfile} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Full Name
                   </label>
                   <div className="relative">
@@ -330,14 +326,14 @@ export default function ProfilePage() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Email Address
                   </label>
                   <div className="relative">
@@ -347,7 +343,7 @@ export default function ProfilePage() {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white"
                       required
                     />
                   </div>
@@ -357,7 +353,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
                   >
                     <Save className="w-4 h-4" />
                     {loading ? "Saving..." : "Save Changes"}
@@ -365,7 +361,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={cancelEdit}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-white/10 text-gray-300 rounded-lg hover:bg-slate-700/50 transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -374,17 +370,17 @@ export default function ProfilePage() {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm text-gray-500">Full Name</label>
-                  <p className="text-gray-900 font-medium">{user?.name}</p>
+                  <label className="text-sm text-gray-400">Full Name</label>
+                  <p className="text-white font-medium">{user?.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm text-gray-500">Email</label>
-                  <p className="text-gray-900 font-medium">{user?.email}</p>
+                  <label className="text-sm text-gray-400">Email</label>
+                  <p className="text-white font-medium">{user?.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm text-gray-500">Member Since</label>
-                  <p className="text-gray-900 font-medium flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-400" />
+                  <label className="text-sm text-gray-400">Member Since</label>
+                  <p className="text-white font-medium flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-emerald-400" />
                     {new Date(user?.createdAt).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
@@ -397,13 +393,13 @@ export default function ProfilePage() {
           </div>
 
           {/* Security Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Security</h2>
+              <h2 className="text-xl font-bold text-white">Security</h2>
               {!isChangingPassword && (
                 <button
                   onClick={() => setIsChangingPassword(true)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors border border-emerald-500/20"
                 >
                   <Lock className="w-4 h-4" />
                   Change Password
@@ -414,7 +410,7 @@ export default function ProfilePage() {
             {isChangingPassword ? (
               <form onSubmit={handleUpdatePassword} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Current Password
                   </label>
                   <div className="relative">
@@ -424,14 +420,14 @@ export default function ProfilePage() {
                       name="currentPassword"
                       value={passwordData.currentPassword}
                       onChange={handlePasswordChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     New Password
                   </label>
                   <div className="relative">
@@ -441,14 +437,14 @@ export default function ProfilePage() {
                       name="newPassword"
                       value={passwordData.newPassword}
                       onChange={handlePasswordChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Confirm New Password
                   </label>
                   <div className="relative">
@@ -458,7 +454,7 @@ export default function ProfilePage() {
                       name="confirmPassword"
                       value={passwordData.confirmPassword}
                       onChange={handlePasswordChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white"
                       required
                     />
                   </div>
@@ -468,7 +464,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
                   >
                     <Save className="w-4 h-4" />
                     {loading ? "Updating..." : "Update Password"}
@@ -484,7 +480,7 @@ export default function ProfilePage() {
                       });
                       setMessage({ type: "", text: "" });
                     }}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-white/10 text-gray-300 rounded-lg hover:bg-slate-700/50 transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -492,15 +488,15 @@ export default function ProfilePage() {
               </form>
             ) : (
               <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <Lock className="w-8 h-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">
+                <div className="p-4 bg-slate-900/50 rounded-lg border border-white/10">
+                  <Lock className="w-8 h-8 text-emerald-400 mb-2" />
+                  <p className="text-sm text-gray-300">
                     Keep your account secure by using a strong password and
                     changing it regularly.
                   </p>
                 </div>
-                <div className="p-4 border border-green-200 bg-green-50 rounded-lg">
-                  <p className="text-sm text-green-800 flex items-center gap-2">
+                <div className="p-4 border border-green-500/20 bg-green-500/10 rounded-lg backdrop-blur-xl">
+                  <p className="text-sm text-green-400 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4" />
                     Password last changed: Recently
                   </p>
@@ -511,22 +507,26 @@ export default function ProfilePage() {
         </div>
 
         {/* Account Stats */}
-        <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Activity Overview
-          </h2>
+        <div className="mt-6 bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-xl p-6">
+          <div className="flex items-center gap-2 mb-6">
+            <Sparkles className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-xl font-bold text-white">Activity Overview</h2>
+          </div>
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-emerald-50 rounded-lg">
-              <p className="text-3xl font-bold text-emerald-600">0</p>
-              <p className="text-sm text-gray-600 mt-1">Comments Posted</p>
+            <div className="text-center p-6 bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 rounded-xl border border-emerald-500/20">
+              <MessageCircle className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+              <p className="text-3xl font-bold text-white">0</p>
+              <p className="text-sm text-gray-400 mt-1">Comments Posted</p>
             </div>
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <p className="text-3xl font-bold text-blue-600">0</p>
-              <p className="text-sm text-gray-600 mt-1">Posts Liked</p>
+            <div className="text-center p-6 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-xl border border-blue-500/20">
+              <Heart className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+              <p className="text-3xl font-bold text-white">0</p>
+              <p className="text-sm text-gray-400 mt-1">Posts Liked</p>
             </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <p className="text-3xl font-bold text-purple-600">0</p>
-              <p className="text-sm text-gray-600 mt-1">Posts Read</p>
+            <div className="text-center p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20">
+              <TrendingUp className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+              <p className="text-3xl font-bold text-white">0</p>
+              <p className="text-sm text-gray-400 mt-1">Posts Read</p>
             </div>
           </div>
         </div>

@@ -11,6 +11,7 @@ export const likesAPI = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, postId) => [
         { type: "Post", id: postId },
+        { type: "Posts", id: "LIST" },
       ],
     }),
   }),

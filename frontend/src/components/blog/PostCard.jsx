@@ -8,7 +8,7 @@ export default function PostCard({ post, priority = false }) {
 
   return (
     <Link
-      to={`/blog/${post.slug?.current}`}
+      to={`/blog/${encodeURIComponent(post.slug?.current || post.slug)}`}
       className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-emerald-300 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
     >
       {/* Image Container */}

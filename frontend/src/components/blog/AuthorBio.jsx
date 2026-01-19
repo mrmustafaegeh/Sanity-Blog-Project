@@ -30,7 +30,9 @@ export default function AuthorBio({ author }) {
         <div className="relative">
           <img
             src={
+              author.image?.url || 
               author.image?.asset?.url ||
+              (typeof author.image === 'string' ? author.image : null) ||
               `https://ui-avatars.com/api/?name=${encodeURIComponent(author.name)}&background=10b981&color=fff&bold=true`
             }
             alt={author.name}

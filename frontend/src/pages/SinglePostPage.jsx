@@ -1,8 +1,9 @@
 // frontend/src/pages/SinglePostPage.jsx
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { PortableText } from "@portabletext/react";
 import {
   useGetPostBySlugQuery,
   useIncrementViewCountMutation,
@@ -27,9 +28,11 @@ import {
   ChevronRight,
   BookmarkCheck,
   Loader2,
+  Zap,
 } from "lucide-react";
 import CommentSection from "../components/blog/CommentSection";
 import AuthorBio from "../components/blog/AuthorBio";
+import SanityImage from "../components/ui/SanityImage";
 
 export default function SinglePostPage() {
   const { slug } = useParams();
@@ -39,7 +42,7 @@ export default function SinglePostPage() {
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   const {
-    data: postData,
+    data: post,
     isLoading,
     isError,
   } = useGetPostBySlugQuery(slug, {
@@ -47,21 +50,38 @@ export default function SinglePostPage() {
     refetchOnMountOrArgChange: true,
   });
 
-  const post = postData; // From transformResponse: (response) => response.post
-
   const [incrementView] = useIncrementViewCountMutation();
   const [toggleLike, { isLoading: liking }] = useToggleLikeMutation();
   const [toggleBookmark, { isLoading: bookmarking }] = useToggleBookmarkMutation();
 
   // Initialize like and bookmark status
   useEffect(() => {
-    if (post && user) {
-      setIsLiked(post.likes?.includes(user._id) || false);
-      // Logic for bookmark status if it comes from user profile or post data
-      // For now, let's assume isBookmarked comes from post.isBookmarked or similar
-      setIsBookmarked(post.isBookmarked || false);
+    if (post && user?._id) {
+      const userId = user._id.toString();
+      setIsLiked(post.likes?.some(id => id?.toString() === userId) || false);
+      // Check if bookmarked from user's bookmark list if available, or post data
+      const isBookmarkedInUser = user.bookmarks?.some(id => id?.toString() === post._id?.toString());
+      setIsBookmarked(!!(isBookmarkedInUser || post.isBookmarked));
+    } else {
+      setIsLiked(false);
+      setIsBookmarked(false);
     }
   }, [post, user]);
+
+  // Scroll Progress Logic
+  useEffect(() => {
+    const updateScrollProgress = () => {
+      const scrollProgress = document.getElementById("scroll-progress");
+      if (scrollProgress) {
+        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (window.scrollY / totalHeight) * 100;
+        scrollProgress.style.width = `${progress}%`;
+      }
+    };
+
+    window.addEventListener("scroll", updateScrollProgress);
+    return () => window.removeEventListener("scroll", updateScrollProgress);
+  }, []);
 
   // Increment view count
   useEffect(() => {
@@ -123,61 +143,51 @@ export default function SinglePostPage() {
     toast.success("Link copied to clipboard!");
   };
 
-  // Render block content
-  const renderBlock = (block, index) => {
-    if (!block?.children || !Array.isArray(block.children)) return null;
-
-    const text = block.children
-      .map((child) => child?.text || "")
-      .join("")
-      .trim();
-
-    if (!text) return null;
-
-    switch (block.style) {
-      case "h2":
+  // PortableText components for custom styling
+  const ptComponents = {
+    block: {
+      h2: ({ children }) => (
+        <h2 className="text-3xl font-bold mt-10 mb-5 text-gray-900">{children}</h2>
+      ),
+      h3: ({ children }) => (
+        <h3 className="text-2xl font-bold mt-8 mb-4 text-gray-900">{children}</h3>
+      ),
+      h4: ({ children }) => (
+        <h4 className="text-xl font-semibold mt-6 mb-3 text-gray-900">{children}</h4>
+      ),
+      blockquote: ({ children }) => (
+        <blockquote className="border-l-4 border-emerald-500 pl-6 py-4 my-6 italic text-gray-700 bg-emerald-50 rounded-r-lg">
+          {children}
+        </blockquote>
+      ),
+      normal: ({ children }) => (
+        <p className="mb-5 text-gray-700 leading-relaxed text-lg">{children}</p>
+      ),
+    },
+    marks: {
+      link: ({ children, value }) => {
+        const rel = !value.href.startsWith("/") ? "noreferrer noopener" : undefined;
         return (
-          <h2
-            key={index}
-            className="text-3xl font-bold mt-10 mb-5 text-gray-900"
+          <a
+            href={value.href}
+            rel={rel}
+            target={rel ? "_blank" : undefined}
+            className="text-emerald-600 hover:text-emerald-700 underline decoration-2 underline-offset-2 transition-colors font-medium"
           >
-            {text}
-          </h2>
+            {children}
+          </a>
         );
-      case "h3":
-        return (
-          <h3
-            key={index}
-            className="text-2xl font-bold mt-8 mb-4 text-gray-900"
-          >
-            {text}
-          </h3>
-        );
-      case "h4":
-        return (
-          <h4
-            key={index}
-            className="text-xl font-semibold mt-6 mb-3 text-gray-900"
-          >
-            {text}
-          </h4>
-        );
-      case "blockquote":
-        return (
-          <blockquote
-            key={index}
-            className="border-l-4 border-emerald-500 pl-6 py-4 my-6 italic text-gray-700 bg-emerald-50 rounded-r-lg"
-          >
-            {text}
-          </blockquote>
-        );
-      default:
-        return (
-          <p key={index} className="mb-5 text-gray-700 leading-relaxed text-lg">
-            {text}
-          </p>
-        );
-    }
+      },
+      strong: ({ children }) => <strong className="font-bold text-gray-900">{children}</strong>,
+    },
+    list: {
+      bullet: ({ children }) => <ul className="list-disc list-outside ml-6 mb-6 space-y-2 text-gray-700">{children}</ul>,
+      number: ({ children }) => <ol className="list-decimal list-outside ml-6 mb-6 space-y-2 text-gray-700">{children}</ol>,
+    },
+    listItem: {
+      bullet: ({ children }) => <li>{children}</li>,
+      number: ({ children }) => <li>{children}</li>,
+    },
   };
 
   if (isLoading) {
@@ -217,186 +227,270 @@ export default function SinglePostPage() {
   }
 
   const readingTime = post.estimatedReadingTime || post.readingTime || 5;
-  const likesCount = (post.likesCount || 0) + (isLiked && !post.likes?.includes(user?._id) ? 1 : 0) - (!isLiked && post.likes?.includes(user?._id) ? 1 : 0);
+  const likesCount = (post.likesCount || post.likes?.length || 0) + (isLiked && !post.likes?.includes(user?._id) ? 1 : 0) - (!isLiked && post.likes?.includes(user?._id) ? 1 : 0);
   const viewsCount = post.views || post.viewCount || 0;
-  const postImage =
-    post.mainImage?.asset?.url || post.mainImage?.url || post.image;
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Scroll Progress Bar (Visual only for now) */}
-      <div className="fixed top-0 left-0 w-full h-1.5 z-50 bg-gray-100">
-        <div className="h-full bg-emerald-500 w-0 transition-all duration-300" id="scroll-progress" />
+    <div className="min-h-screen bg-slate-50">
+      {/* Immersive Scroll Progress */}
+      <div className="fixed top-0 left-0 w-full h-1.5 z-[100]">
+        <div 
+          className="h-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 w-0 transition-all duration-300 shadow-[0_0_10px_rgba(52,211,153,0.5)]" 
+          id="scroll-progress" 
+        />
       </div>
 
-      <article className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
-        {/* Navigation & Actions */}
-        <div className="flex items-center justify-between mb-12">
-          <Link
-            to="/blog"
-            className="flex items-center gap-2 text-gray-500 hover:text-emerald-600 font-medium transition-colors"
-          >
-            <ArrowLeft size={18} />
-            <span>Articles</span>
-          </Link>
-          
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={handleBookmark}
-              disabled={bookmarking}
-              className={`p-2.5 rounded-full transition-all active:scale-95 ${
-                isBookmarked 
-                  ? "bg-emerald-100 text-emerald-600" 
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-              }`}
-            >
-              {isBookmarked ? <BookmarkCheck size={20} /> : <Bookmark size={20} />}
-            </button>
-            <button 
-              onClick={copyLink}
-              className="p-2.5 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all active:scale-95"
-            >
-              <Share2 size={20} />
-            </button>
+      <article className="animate-in fade-in duration-1000">
+        {/* Immersive Hero Section */}
+        <div className="relative h-[70vh] min-h-[500px] w-full bg-slate-900 group overflow-hidden">
+          {/* Hero Background Image */}
+          <div className="absolute inset-0">
+            <SanityImage
+              image={post.mainImage}
+              alt={post.title}
+              className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-[2s] ease-out"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-slate-900/60 to-slate-50" />
+          </div>
+
+          {/* Navigation Overlay */}
+          <div className="absolute top-0 left-0 right-0 z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex items-center justify-between">
+              <Link
+                to="/blog"
+                className="flex items-center gap-2 text-white/80 hover:text-white font-medium transition-all group/back"
+              >
+                <div className="p-2 bg-white/10 backdrop-blur-md rounded-full group-hover/back:bg-white/20 transition-all">
+                  <ArrowLeft size={20} />
+                </div>
+                <span className="hidden sm:inline">Back to Articles</span>
+              </Link>
+              
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={handleBookmark}
+                  disabled={bookmarking}
+                  className={`p-3 rounded-full backdrop-blur-md border border-white/20 transition-all active:scale-95 ${
+                    isBookmarked 
+                      ? "bg-emerald-500 text-white border-emerald-400" 
+                      : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
+                >
+                  {isBookmarked ? <BookmarkCheck size={20} /> : <Bookmark size={20} />}
+                </button>
+                <div className="relative group/share">
+                   <button 
+                    onClick={copyLink}
+                    className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all active:scale-95"
+                  >
+                    <Share2 size={20} />
+                  </button>
+                  {/* Desktop Social Tooltip */}
+                  <div className="absolute top-full right-0 mt-3 hidden group-hover/share:flex flex-col gap-2 p-2 bg-white rounded-2xl shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
+                    <button onClick={() => share("twitter")} className="p-2 hover:bg-slate-50 rounded-xl text-blue-400 transition-colors"><Twitter size={20} /></button>
+                    <button onClick={() => share("facebook")} className="p-2 hover:bg-slate-50 rounded-xl text-blue-600 transition-colors"><Facebook size={20} /></button>
+                    <button onClick={() => share("linkedin")} className="p-2 hover:bg-slate-50 rounded-xl text-blue-700 transition-colors"><Linkedin size={20} /></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Hero Content */}
+          <div className="absolute inset-0 flex items-end">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20 w-full">
+              <div className="flex flex-wrap items-center gap-3 mb-6 animate-in slide-in-from-bottom duration-700 delay-100">
+                {post.categories?.map((cat, i) => (
+                  <span key={i} className="px-4 py-1 bg-emerald-500/20 backdrop-blur-md text-emerald-300 text-xs font-bold uppercase tracking-widest rounded-full border border-emerald-400/30">
+                    {cat.title || cat}
+                  </span>
+                ))}
+                <div className="flex items-center gap-2 px-4 py-1 bg-white/10 backdrop-blur-md text-white/90 text-xs font-bold uppercase tracking-widest rounded-full border border-white/10">
+                  <Clock size={14} className="text-emerald-400" />
+                  <span>{readingTime} min read</span>
+                </div>
+              </div>
+
+              <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-10 animate-in slide-in-from-bottom duration-700">
+                <span className="bg-gradient-to-r from-white via-white to-white/60 bg-clip-text text-transparent">
+                  {post.title}
+                </span>
+              </h1>
+
+              {/* Glassmorphic Metadata bar */}
+              <div className="flex flex-wrap items-center justify-between gap-6 p-6 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl animate-in slide-in-from-bottom duration-700 delay-200">
+                <div className="flex items-center gap-4">
+                  <img 
+                    src={post.author?.image?.url || post.author?.image?.asset?.url || post.author?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author?.name || "A")}&background=10b981&color=fff`}
+                    alt={post.author?.name}
+                    className="w-14 h-14 rounded-full border-2 border-white/20 shadow-lg object-cover"
+                  />
+                  <div>
+                    <p className="font-bold text-white text-lg leading-none mb-1">
+                      {post.author?.name || "Anonymous"}
+                    </p>
+                    <p className="text-white/60 text-sm">
+                      {new Date(post.publishedAt || post.createdAt).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric"
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-10">
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center gap-2 text-white">
+                      <Eye size={20} className="text-cyan-400" />
+                      <span className="text-xl font-black tracking-tight">{viewsCount.toLocaleString()}</span>
+                    </div>
+                    <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Analytics</span>
+                  </div>
+                  
+                  <button 
+                    onClick={handleLike}
+                    disabled={liking}
+                    className={`group flex flex-col items-center transition-all hover:scale-110 ${isLiked ? "text-rose-500" : "text-white/40 hover:text-white"}`}
+                  >
+                    <Heart size={28} className={isLiked ? "fill-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.5)]" : "group-hover:text-rose-400"} />
+                    <span className="text-xs font-black mt-1">{likesCount}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Hero Area */}
-        <header className="mb-12">
-          <div className="flex items-center gap-3 mb-6">
-            {post.categories?.map((cat, i) => (
-              <span key={i} className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider rounded-lg">
-                {cat.title || cat}
-              </span>
-            ))}
-            <span className="text-gray-400 text-xs font-bold uppercase tracking-wider">
-              {readingTime} min read
-            </span>
-          </div>
-
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.1] mb-8">
-            {post.title}
-          </h1>
-
-          <div className="flex items-center justify-between py-6 border-y border-gray-100">
-            <div className="flex items-center gap-4">
-              <img 
-                src={post.author?.image?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author?.name || "A")}&background=10b981&color=fff`}
-                alt={post.author?.name}
-                className="w-12 h-12 rounded-full border-2 border-white shadow-sm"
-              />
-              <div>
-                <p className="font-bold text-gray-900 leading-none mb-1">
-                  {post.author?.name || "Anonymous"}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {new Date(post.publishedAt || post.createdAt).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric"
-                  })}
-                </p>
+        {/* Major Content Layout */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-[1fr_320px] gap-12 py-20 relative">
+          
+          <div className="min-w-0">
+            {/* AI Summary - Refined "Magical" Visual */}
+            {post.aiSummary && (
+              <div className="mb-16 group relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 via-cyan-500 to-emerald-500 rounded-[2rem] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200 animate-gradient" />
+                <div className="relative p-10 bg-white rounded-[2rem] border border-emerald-100 shadow-xl overflow-hidden">
+                  <div className="absolute top-0 right-0 p-6 opacity-5 select-none">
+                    <Sparkles size={160} className="text-emerald-500" />
+                  </div>
+                  
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-200 animate-pulse">
+                      <Sparkles size={20} />
+                    </div>
+                    <h3 className="text-emerald-600 font-black text-sm uppercase tracking-widest">AI Content Synthesis</h3>
+                  </div>
+                  
+                  <p className="text-slate-800 text-2xl font-medium leading-relaxed italic relative z-10">
+                    "{post.aiSummary}"
+                  </p>
+                  
+                  <div className="mt-8 flex items-center gap-4 text-slate-400 text-sm font-medium border-t border-slate-50 pt-6">
+                    <div className="flex -space-x-2">
+                       <div className="w-6 h-6 rounded-full bg-emerald-400 border-2 border-white z-20" />
+                       <div className="w-6 h-6 rounded-full bg-cyan-400 border-2 border-white z-10" />
+                    </div>
+                    <span>Generated by Blogify Intelligence</span>
+                  </div>
+                </div>
               </div>
+            )}
+
+            {/* Main Content Body - Optimized Typography */}
+            <div className="prose prose-slate lg:prose-xl max-w-none 
+              prose-headings:font-black prose-headings:tracking-tight prose-headings:text-slate-900
+              prose-p:text-slate-700 prose-p:leading-relaxed prose-p:mb-8
+              prose-a:text-emerald-600 prose-a:font-bold prose-a:no-underline hover:prose-a:underline
+              prose-blockquote:border-emerald-500 prose-blockquote:bg-emerald-50 prose-blockquote:py-2 prose-blockquote:px-8 prose-blockquote:rounded-r-2xl prose-blockquote:text-slate-800 prose-blockquote:not-italic
+              prose-img:rounded-3xl prose-img:shadow-2xl
+              prose-li:text-slate-700">
+              {post.body && (
+                <PortableText value={post.body} components={ptComponents} />
+              )}
+              {post.content && (
+                <div
+                  dangerouslySetInnerHTML={{ __html: post.content }}
+                  className="mt-8"
+                />
+              )}
             </div>
 
-            <div className="flex items-center gap-6">
-              <div className="text-center">
-                <p className="text-lg font-bold text-gray-900 leading-none">
-                  {viewsCount.toLocaleString()}
-                </p>
-                <p className="text-[10px] text-gray-400 font-bold uppercase">Views</p>
+            {/* Content Footer - Social & Actions */}
+            <div className="mt-20 py-10 border-t border-slate-100 flex flex-wrap items-center justify-between gap-8">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Share this Story</span>
+                <div className="flex gap-2">
+                  <button onClick={() => share("twitter")} className="p-3 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:text-blue-400 transition-all active:scale-95"><Twitter size={20} /></button>
+                  <button onClick={() => share("facebook")} className="p-3 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:text-blue-600 transition-all active:scale-95"><Facebook size={20} /></button>
+                  <button onClick={() => share("linkedin")} className="p-3 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:text-blue-700 transition-all active:scale-95"><Linkedin size={20} /></button>
+                </div>
               </div>
               <button 
-                onClick={handleLike}
-                disabled={liking}
-                className={`flex flex-col items-center transition-colors ${isLiked ? "text-red-500" : "text-gray-300 hover:text-gray-400"}`}
+                onClick={copyLink}
+                className="flex items-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-all active:scale-95"
               >
-                <Heart size={24} className={isLiked ? "fill-red-500" : ""} />
-                <span className="text-[10px] font-bold uppercase">{likesCount}</span>
+                <Copy size={18} />
+                Copy Link
               </button>
             </div>
           </div>
-        </header>
 
-        {/* AI Summary */}
-        {post.aiSummary && (
-          <div className="mb-12 p-8 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-3xl border border-indigo-100 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Sparkles size={100} className="text-indigo-600" />
-            </div>
-            <div className="relative">
-              <div className="flex items-center gap-2 mb-4 text-indigo-600 font-bold text-sm uppercase tracking-widest">
-                <Sparkles size={16} />
-                <span>AI Core Insights</span>
+          {/* Sidebar Area */}
+          <aside className="space-y-12">
+            {/* Sticky Sidebar Content */}
+            <div className="sticky top-32 space-y-12">
+              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50">
+                <h4 className="text-slate-900 font-black text-lg mb-6 flex items-center gap-2">
+                   Meet the Author
+                </h4>
+                <AuthorBio author={post.author} />
               </div>
-              <p className="text-indigo-900 text-lg leading-relaxed italic">
-                "{post.aiSummary}"
-              </p>
+
+              {/* Newsletter or CTA Card */}
+              <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white relative overflow-hidden shadow-2xl">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                   <Zap size={100} className="text-emerald-500" />
+                </div>
+                <h4 className="text-xl font-black mb-3 relative z-10">Never miss a beat.</h4>
+                <p className="text-slate-400 text-sm mb-6 relative z-10">
+                  Join our weekly newsletter for more insights like these.
+                </p>
+                <div className="relative z-10 space-y-3">
+                  <input type="email" placeholder="Email address" className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" />
+                  <button className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl transition-all shadow-lg shadow-emerald-500/20">
+                    Subscribe Now
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          </aside>
+        </div>
 
-        {/* Featured Image */}
-        {postImage && (
-          <div className="mb-12 rounded-3xl overflow-hidden shadow-2xl bg-gray-100 border border-gray-100">
-            <img
-              src={postImage}
-              alt={post.title}
-              className="w-full h-auto max-h-[600px] object-cover"
-            />
-            {post.mainImage?.caption && (
-              <p className="p-4 text-center text-sm text-gray-400 italic bg-white border-t border-gray-50">
-                {post.mainImage.caption}
+        {/* Related Content & Discussion */}
+        <div className="bg-slate-100 py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <CommentSection postId={post._id} />
+          </div>
+        </div>
+
+        {/* Bottom Immersive Banner */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+          <div className="p-16 bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3rem] text-center text-white relative overflow-hidden shadow-2xl">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent opacity-50" />
+            <div className="relative z-10">
+              <h2 className="text-4xl md:text-5xl font-black mb-6">Hungry for more?</h2>
+              <p className="text-slate-400 text-lg mb-10 max-w-xl mx-auto">
+                Explore our curated collection of articles hand-picked to help you grow.
               </p>
-            )}
-          </div>
-        )}
-
-        {/* Social Sticky Side (Desktop) */}
-        <div className="relative">
-          <div className="hidden lg:flex flex-col gap-4 absolute -left-20 top-0 sticky top-32 h-fit">
-            <button onClick={() => share("twitter")} className="p-3 bg-white border border-gray-100 rounded-full shadow-sm hover:shadow-md hover:text-blue-400 transition-all"><Twitter size={20} /></button>
-            <button onClick={() => share("facebook")} className="p-3 bg-white border border-gray-100 rounded-full shadow-sm hover:shadow-md hover:text-blue-600 transition-all"><Facebook size={20} /></button>
-            <button onClick={() => share("linkedin")} className="p-3 bg-white border border-gray-100 rounded-full shadow-sm hover:shadow-md hover:text-blue-700 transition-all"><Linkedin size={20} /></button>
-          </div>
-
-          {/* Main Content Body */}
-          <div className="prose prose-emerald prose-lg max-w-none">
-            {post.body?.map((block, i) => renderBlock(block, i))}
-            {post.content && (
-              <div
-                dangerouslySetInnerHTML={{ __html: post.content }}
-                className="mt-8"
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Author Footer */}
-        <div className="mt-20 pt-10 border-t border-gray-100">
-          <AuthorBio author={post.author} />
-        </div>
-
-        {/* Discussion Area */}
-        <div className="mt-20">
-          <CommentSection postId={post._id} />
-        </div>
-
-        {/* Bottom Banner */}
-        <div className="mt-24 p-12 bg-gray-900 rounded-[2.5rem] text-center text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 opacity-30" />
-          <div className="relative z-10">
-            <h2 className="text-3xl font-bold mb-4">Enjoyed this article?</h2>
-            <p className="text-gray-400 mb-8 max-w-md mx-auto">
-              Follow us for more high-quality content on technology and design delivered straight to your dashboard.
-            </p>
-            <Link 
-              to="/blog"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-white text-gray-900 rounded-full font-bold hover:bg-emerald-50 transition-colors shadow-xl"
-            >
-              Continue Reading
-              <ChevronRight size={18} />
-            </Link>
+              <Link 
+                to="/blog"
+                className="group inline-flex items-center gap-3 px-10 py-5 bg-white text-slate-900 rounded-full font-black hover:bg-emerald-50 transition-all shadow-2xl hover:scale-105 active:scale-95"
+              >
+                Explore Blogify
+                <ChevronRight size={22} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
           </div>
         </div>
       </article>

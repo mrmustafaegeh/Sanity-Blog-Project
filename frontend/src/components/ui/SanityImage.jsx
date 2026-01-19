@@ -1,8 +1,10 @@
 import PropTypes from "prop-types";
 
 export default function SanityImage({ image, alt, className, ...props }) {
+  const imageUrl = image?.asset?.url || image?.url;
+
   // If no image, return fallback or null
-  if (!image?.asset?.url) {
+  if (!imageUrl) {
     return (
       <div
         className={`bg-gray-200 flex items-center justify-center ${className}`}
@@ -14,7 +16,7 @@ export default function SanityImage({ image, alt, className, ...props }) {
 
   return (
     <img
-      src={image.asset.url}
+      src={imageUrl}
       alt={alt || image.alt || "Post image"}
       className={className}
       {...props}

@@ -30,7 +30,14 @@ export const postsAPI = apiSlice.injectEndpoints({
     getPostBySlug: builder.query({
       query: (slug) => `/posts/slug/${slug}`,
       transformResponse: (response) => response.post,
-      providesTags: (result, error, slug) => [{ type: "Post", id: slug }],
+      providesTags: (result, error, slug) => 
+        result 
+          ? [
+              { type: "Post", id: result._id }, 
+              { type: "Post", id: result.slug?.current || result.slug || slug },
+              { type: "Post", id: "PARTIAL_DETAILS" }
+            ] 
+          : [{ type: "Post", id: slug }],
     }),
 
     // Get recent posts
@@ -163,16 +170,6 @@ export const postsAPI = apiSlice.injectEndpoints({
       invalidatesTags: ["Posts"],
     }),
 
-    toggleLike: builder.mutation({
-      query: (postId) => ({
-        url: `/posts/${postId}/like`,
-        method: "POST",
-      }),
-      invalidatesTags: (result, error, postId) => [
-        { type: "Post", id: postId },
-      ],
-    }),
-
     // Search posts
     searchPosts: builder.query({
       query: ({ q, page = 1, limit = 10 }) => ({
@@ -211,5 +208,4 @@ export const {
   useUpdatePostMutation,
   useDeletePostMutation,
   useSearchPostsQuery,
-  useToggleLikeMutation,
 } = postsAPI;

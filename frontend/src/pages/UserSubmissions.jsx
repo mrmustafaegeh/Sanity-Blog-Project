@@ -1,7 +1,6 @@
-// frontend/src/pages/UserSubmissions.jsx
 import { useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   useGetUserSubmissionsQuery,
   useDeleteSubmissionMutation,
@@ -38,7 +37,6 @@ const STATUS_CONFIG = {
   },
 };
 
-// Loading state component
 const LoadingState = () => (
   <div className="p-8 text-center">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
@@ -46,7 +44,6 @@ const LoadingState = () => (
   </div>
 );
 
-// Error state component
 const ErrorState = ({ error, onRetry }) => (
   <div className="p-8 text-center">
     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -64,7 +61,6 @@ const ErrorState = ({ error, onRetry }) => (
   </div>
 );
 
-// Empty state component
 const EmptyState = ({ onNavigate }) => (
   <div className="p-12 text-center">
     <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -82,10 +78,8 @@ const EmptyState = ({ onNavigate }) => (
   </div>
 );
 
-// Authentication required state
 const AuthRequiredState = () => {
   const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
       <div className="text-center">
@@ -103,10 +97,8 @@ const AuthRequiredState = () => {
   );
 };
 
-// User ID missing state
 const UserIdMissingState = () => {
   const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
       <div className="text-center">
@@ -125,7 +117,22 @@ const UserIdMissingState = () => {
   );
 };
 
-// Table row component for better separation
+// ✅ Extract slug from whatever shape you store it in
+const getSubmissionSlug = (submission) => {
+  // Most common shapes:
+  // - sanitySlug: "my-post"
+  // - sanitySlug: { current: "my-post" }
+  // - slug: { current: "my-post" }
+  // - slug: "my-post"
+  return (
+    submission?.sanitySlug?.current ||
+    submission?.sanitySlug ||
+    submission?.slug?.current ||
+    submission?.slug ||
+    null
+  );
+};
+
 const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
   const statusConfig = STATUS_CONFIG[submission.status] || {
     color: "bg-gray-100 text-gray-800 border-gray-300",
@@ -133,7 +140,11 @@ const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
     label: submission.status,
   };
 
+  const slug = getSubmissionSlug(submission);
+  const blogLink = slug ? `/blog/${encodeURIComponent(slug)}` : null;
+
   const formatDate = (dateString) => {
+    if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -149,11 +160,13 @@ const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
         <div className="text-sm font-medium text-gray-900">
           {submission.title}
         </div>
+
         {submission.excerpt && (
           <div className="text-xs text-gray-500 mt-1 line-clamp-2">
             {submission.excerpt}
           </div>
         )}
+
         {submission.rejectionReason && (
           <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
             <p className="text-xs font-medium text-red-800 mb-1">
@@ -162,7 +175,11 @@ const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
             <p className="text-xs text-red-700">{submission.rejectionReason}</p>
           </div>
         )}
+
+        {/* Debug helper (optional) */}
+        {/* <div className="mt-2 text-[11px] text-gray-400">slug: {String(slug)}</div> */}
       </td>
+
       <td className="px-6 py-4">
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${statusConfig.color}`}
@@ -171,18 +188,21 @@ const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
           {statusConfig.label}
         </span>
       </td>
+
       <td className="px-6 py-4 text-sm text-gray-500">
         {formatDate(submission.submittedAt)}
       </td>
+
       <td className="px-6 py-4 text-sm text-gray-500">
         {submission.readingTime || 5} min
       </td>
+
       <td className="px-6 py-4 text-sm">
         <div className="flex items-center space-x-3">
           <button
             onClick={() => onNavigate(`/submissions/${submission._id}`)}
             className="text-emerald-600 hover:text-emerald-800 flex items-center"
-            title="View details"
+            title="View submission details"
           >
             <Eye className="w-4 h-4" />
           </button>
@@ -209,22 +229,29 @@ const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
             </button>
           )}
 
-          {submission.status === "approved" && submission.sanityPostId && (
-            <a
-              href={`/posts/${submission.sanityPostId}`}
+          {/* ✅ FIX: Only route you have is /blog/:slug */}
+          {submission.status === "approved" && blogLink ? (
+            <Link
+              to={blogLink}
               className="text-emerald-600 hover:text-emerald-800 text-xs px-2 py-1 border border-emerald-200 rounded hover:bg-emerald-50"
               title="View published post"
             >
               View Post →
-            </a>
-          )}
+            </Link>
+          ) : null}
+
+          {/* ✅ If approved but no slug, show why */}
+          {submission.status === "approved" && !blogLink ? (
+            <span className="text-xs text-red-500 border border-red-200 rounded px-2 py-1">
+              Missing slug (fix admin publish)
+            </span>
+          ) : null}
         </div>
       </td>
     </tr>
   );
 };
 
-// Summary stats component
 const SummaryStats = ({ submissions }) => {
   const stats = useMemo(
     () => ({
@@ -275,14 +302,27 @@ export default function UserSubmissions() {
     useDeleteSubmissionMutation();
 
   useEffect(() => {
-    console.log("🔍 UserSubmissions loaded for userId:", userId);
-    console.log("📦 Submissions data:", submissions);
+    console.log("🔍 UserSubmissions userId:", userId);
+    console.log("📦 Submissions:", submissions);
+
+    // Helpful debug: see what slugs you have for approved posts
+    const arr = Array.isArray(submissions) ? submissions : [];
+    console.log(
+      "🧾 Approved slugs:",
+      arr
+        .filter((s) => s.status === "approved")
+        .map((s) => ({
+          id: s._id,
+          sanityPostId: s.sanityPostId,
+          sanitySlug: s.sanitySlug,
+          slug: s.slug,
+        }))
+    );
   }, [userId, submissions]);
 
   const handleDelete = async (submissionId) => {
-    if (!window.confirm("Are you sure you want to delete this submission?")) {
+    if (!window.confirm("Are you sure you want to delete this submission?"))
       return;
-    }
 
     try {
       await deleteSubmission(submissionId).unwrap();
@@ -293,17 +333,10 @@ export default function UserSubmissions() {
     }
   };
 
-  // Ensure submissions is always an array
   const submissionsArray = Array.isArray(submissions) ? submissions : [];
 
-  // Early returns for authentication and loading states
-  if (!isAuthenticated) {
-    return <AuthRequiredState />;
-  }
-
-  if (!userId) {
-    return <UserIdMissingState />;
-  }
+  if (!isAuthenticated) return <AuthRequiredState />;
+  if (!userId) return <UserIdMissingState />;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -317,15 +350,13 @@ export default function UserSubmissions() {
               </h1>
               <p className="text-gray-600">Track your submitted posts</p>
             </div>
-            <div>
-              <button
-                onClick={() => navigate("/submit")}
-                className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors flex items-center"
-              >
-                <PlusCircle className="w-5 h-5 mr-2" />
-                Submit New Post
-              </button>
-            </div>
+            <button
+              onClick={() => navigate("/submit")}
+              className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors flex items-center"
+            >
+              <PlusCircle className="w-5 h-5 mr-2" />
+              Submit New Post
+            </button>
           </div>
         </div>
 
@@ -375,7 +406,6 @@ export default function UserSubmissions() {
           )}
         </div>
 
-        {/* Summary Stats */}
         {submissionsArray.length > 0 && (
           <SummaryStats submissions={submissionsArray} />
         )}

@@ -151,7 +151,7 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <StatCard
             title="Total Posts"
             value={totalPosts}
@@ -168,16 +168,23 @@ export default function AdminDashboard() {
           />
           <StatCard
             title="Total Views"
-            value={analytics?.analytics?.engagement?.totalViews || 0}
+            value={analytics?.analytics?.totals?.totalViews || 0}
             icon={<Eye className="w-6 h-6" />}
             color="blue"
             loading={analyticsLoading}
           />
           <StatCard
             title="Total Likes"
-            value={analytics?.analytics?.engagement?.totalLikes || 0}
+            value={analytics?.analytics?.totals?.totalLikes || 0}
             icon={<Heart className="w-6 h-6" />}
             color="red"
+            loading={analyticsLoading}
+          />
+          <StatCard
+            title="Total Comments"
+            value={analytics?.analytics?.comments?.total || 0}
+            icon={<MessageSquare className="w-6 h-6" />}
+            color="purple"
             loading={analyticsLoading}
           />
         </div>
@@ -194,19 +201,19 @@ export default function AdminDashboard() {
             <div className="space-y-4">
               <ProgressBar
                 label="Views"
-                value={analytics?.analytics?.engagement?.totalViews || 0}
+                value={analytics?.analytics?.totals?.totalViews || 0}
                 max={10000}
                 color="blue"
               />
               <ProgressBar
                 label="Likes"
-                value={analytics?.analytics?.engagement?.totalLikes || 0}
+                value={analytics?.analytics?.totals?.totalLikes || 0}
                 max={1000}
                 color="red"
               />
               <ProgressBar
                 label="Comments"
-                value={analytics?.analytics?.engagement?.totalComments || 0}
+                value={analytics?.analytics?.comments?.total || 0}
                 max={500}
                 color="purple"
               />
@@ -229,11 +236,11 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-emerald-100">Engagement Rate</span>
                 <span className="font-semibold">
-                  {analytics?.analytics?.engagement?.totalViews > 0
+                  {analytics?.analytics?.totals?.totalViews > 0
                     ? (
-                        ((analytics?.analytics?.engagement?.totalLikes +
-                          analytics?.analytics?.engagement?.totalComments) /
-                          analytics?.analytics?.engagement?.totalViews) *
+                        ((analytics?.analytics?.totals?.totalLikes +
+                          (analytics?.analytics?.comments?.total || 0)) /
+                          analytics?.analytics?.totals?.totalViews) *
                         100
                       ).toFixed(1)
                     : 0}

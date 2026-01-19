@@ -22,7 +22,7 @@ export const getAdminAnalytics = async (req, res) => {
       Post.countDocuments({ status: "pending" }),
       User.countDocuments(),
       User.countDocuments({ role: { $in: ["author", "admin"] } }),
-      Comment.countDocuments({ isApproved: true }),
+      Comment.countDocuments(),
       Submission.countDocuments({ status: "pending" }),
     ]);
 
@@ -30,21 +30,36 @@ export const getAdminAnalytics = async (req, res) => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const engagementStats = await Post.aggregate([
-      {
-        $match: {
-          publishedAt: { $gte: thirtyDaysAgo },
-          status: "published",
+    const [engagementStats, globalEngagement] = await Promise.all([
+      Post.aggregate([
+        {
+          $match: {
+            publishedAt: { $gte: thirtyDaysAgo },
+            status: "published",
+          },
         },
-      },
-      {
-        $group: {
-          _id: null,
-          totalViews: { $sum: "$views" },
-          totalLikes: { $sum: "$likesCount" },
-          totalComments: { $sum: "$commentsCount" },
+        {
+          $group: {
+            _id: null,
+            totalViews: { $sum: "$views" },
+            totalLikes: { $sum: "$likesCount" },
+            totalComments: { $sum: "$commentsCount" },
+          },
         },
-      },
+      ]),
+      Post.aggregate([
+        {
+          $match: { status: "published" },
+        },
+        {
+          $group: {
+            _id: null,
+            totalViews: { $sum: "$views" },
+            totalLikes: { $sum: "$likesCount" },
+            totalComments: { $sum: "$commentsCount" },
+          },
+        },
+      ]),
     ]);
 
     // Get recent posts for timeline
@@ -106,8 +121,14 @@ export const getAdminAnalytics = async (req, res) => {
           totalLikes: 0,
           totalComments: 0,
         },
+        totals: globalEngagement[0] || {
+          totalViews: 0,
+          totalLikes: 0,
+          totalComments: 0,
+        },
         comments: {
           total: totalComments,
+          approved: await Comment.countDocuments({ isApproved: true }),
           pending: await Comment.countDocuments({ isApproved: false }),
         },
         submissions: {

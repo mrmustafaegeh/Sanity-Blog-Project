@@ -2,7 +2,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { Search, Menu, X, PlusCircle, FileText, Shield } from "lucide-react";
+import { Search, Menu, X, PlusCircle, FileText, Shield, Home, BookOpen, Tag } from "lucide-react";
 import SearchBar from "../../shared/SearchBar";
 import UserMenu from "../../UserMenu";
 
@@ -18,9 +18,9 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   const navLinks = [
-    { path: "/", label: "Home", icon: "🏠" },
-    { path: "/blog", label: "Blog", icon: "📝" },
-    { path: "/categories", label: "Categories", icon: "🏷️" },
+    { path: "/", label: "Home", icon: Home },
+    { path: "/blog", label: "Blog", icon: BookOpen },
+    { path: "/categories", label: "Categories", icon: Tag },
   ];
 
   useEffect(() => {
@@ -35,8 +35,8 @@ export default function Navbar() {
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/95 backdrop-blur-lg border-b border-gray-200 shadow-lg"
-          : "bg-white/90 backdrop-blur-lg border-b border-gray-100"
+          ? "bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-2xl"
+          : "bg-slate-900/90 backdrop-blur-xl border-b border-white/5"
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6">
@@ -44,47 +44,52 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center space-x-2 text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent hover:scale-105 transition-transform"
+            className="flex items-center space-x-2 text-2xl font-bold group"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-lg flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
               <span className="text-white font-bold text-lg">B</span>
             </div>
-            <span>Blogify</span>
+            <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+              Blogify
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`relative px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                  isActive(link.path)
-                    ? "text-emerald-600 bg-emerald-50"
-                    : "text-gray-700 hover:text-emerald-600 hover:bg-gray-50"
-                }`}
-              >
-                <span className="mr-1.5">{link.icon}</span>
-                {link.label}
-              </Link>
-            ))}
+          <div className="hidden lg:flex items-center space-x-2">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 flex items-center gap-2 ${
+                    isActive(link.path)
+                      ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
+                      : "text-gray-300 hover:text-emerald-400 hover:bg-white/5"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {link.label}
+                </Link>
+              );
+            })}
 
             {/* User Submission Links (Authenticated Users) */}
             {isAuthenticated && (
               <>
                 <Link
                   to="/submit"
-                  className="flex items-center px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105"
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 hover:scale-105"
                 >
-                  <PlusCircle className="w-4 h-4 mr-2" />
+                  <PlusCircle className="w-4 h-4" />
                   Submit Post
                 </Link>
 
                 <Link
                   to="/user/submissions"
-                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-emerald-600 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-300 hover:text-emerald-400 hover:bg-white/5 rounded-xl transition-colors"
                 >
-                  <FileText className="w-4 h-4 mr-2" />
+                  <FileText className="w-4 h-4" />
                   My Posts
                 </Link>
               </>
@@ -94,9 +99,9 @@ export default function Navbar() {
             {user?.isAdmin && (
               <Link
                 to="/admin/pending"
-                className="flex items-center px-3 py-2 text-sm font-medium text-purple-700 hover:text-purple-800 hover:bg-purple-50 rounded-lg transition-colors border border-purple-200"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-xl transition-colors border border-purple-500/20"
               >
-                <Shield className="w-4 h-4 mr-2" />
+                <Shield className="w-4 h-4" />
                 Admin
               </Link>
             )}
@@ -113,10 +118,10 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => setShowSearch(true)}
-                  className="p-2.5 rounded-lg hover:bg-gray-100 transition-colors group"
+                  className="p-2.5 rounded-xl hover:bg-white/5 transition-colors group"
                   aria-label="Search"
                 >
-                  <Search className="w-5 h-5 text-gray-600 group-hover:text-emerald-600" />
+                  <Search className="w-5 h-5 text-gray-400 group-hover:text-emerald-400" />
                 </button>
               )}
             </div>
@@ -129,13 +134,13 @@ export default function Navbar() {
                 <>
                   <Link
                     to="/login"
-                    className="px-5 py-2.5 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors"
+                    className="px-5 py-2.5 text-sm font-medium text-gray-300 hover:text-emerald-400 transition-colors"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/register"
-                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-400 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105"
+                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 hover:scale-105"
                   >
                     Get Started
                   </Link>
@@ -145,14 +150,14 @@ export default function Navbar() {
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden p-2.5 rounded-lg hover:bg-gray-100 transition-colors"
+              className="lg:hidden p-2.5 rounded-xl hover:bg-white/5 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X className="w-6 h-6 text-gray-700" />
+                <X className="w-6 h-6 text-gray-300" />
               ) : (
-                <Menu className="w-6 h-6 text-gray-700" />
+                <Menu className="w-6 h-6 text-gray-300" />
               )}
             </button>
           </div>
@@ -160,34 +165,37 @@ export default function Navbar() {
 
         {/* Mobile Search Bar */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-3 animate-slide-down">
+          <div className="md:hidden mt-3 pb-4 animate-slide-down">
             <SearchBar />
           </div>
         )}
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 py-4 animate-slide-down">
+          <div className="lg:hidden border-t border-white/10 py-4 animate-slide-down">
             <div className="flex flex-col space-y-1">
               {/* Main Navigation Links */}
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    isActive(link.path)
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <span className="mr-3 text-lg">{link.icon}</span>
-                  {link.label}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                      isActive(link.path)
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        : "text-gray-300 hover:bg-white/5"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {link.label}
+                  </Link>
+                );
+              })}
 
               {/* Divider */}
-              <div className="h-px bg-gray-200 my-2 mx-4" />
+              <div className="h-px bg-white/10 my-2 mx-4" />
 
               {/* User Submission Links */}
               {isAuthenticated && (
@@ -195,18 +203,18 @@ export default function Navbar() {
                   <Link
                     to="/submit"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center px-4 py-3 rounded-lg text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-400 text-white mb-2"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-emerald-500 to-cyan-500 text-white mb-2"
                   >
-                    <PlusCircle className="w-5 h-5 mr-3" />
+                    <PlusCircle className="w-5 h-5" />
                     Submit Post
                   </Link>
 
                   <Link
                     to="/user/submissions"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:bg-white/5"
                   >
-                    <FileText className="w-5 h-5 mr-3" />
+                    <FileText className="w-5 h-5" />
                     My Posts
                   </Link>
                 </>
@@ -217,9 +225,9 @@ export default function Navbar() {
                 <Link
                   to="/admin/pending"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center px-4 py-3 rounded-lg text-sm font-medium text-purple-700 bg-purple-50 border border-purple-100 mt-2"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-purple-400 bg-purple-500/10 border border-purple-500/20 mt-2"
                 >
-                  <Shield className="w-5 h-5 mr-3" />
+                  <Shield className="w-5 h-5" />
                   Admin Panel
                 </Link>
               )}

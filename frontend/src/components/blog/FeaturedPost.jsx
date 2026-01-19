@@ -54,7 +54,7 @@ export default function FeaturedPost({ post }) {
             </div>
 
             <Link
-              to={`/blog/${post.slug?.current}`}
+              to={`/blog/${encodeURIComponent(post.slug?.current || post.slug)}`}
               className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-400 text-white font-medium rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
             >
               <span>Read Full Article</span>

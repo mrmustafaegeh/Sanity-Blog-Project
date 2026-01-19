@@ -13,8 +13,8 @@ export const toggleLike = async (req, res) => {
       });
     }
 
-    const userId = req.user._id;
-    const isLiked = post.likes.includes(userId);
+    const userId = req.user._id.toString();
+    const isLiked = post.likes.some((id) => id.toString() === userId);
 
     if (isLiked) {
       // Remove like

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser, clearError } from "../../store/authSlice";
+import { Eye, EyeOff, Lock, Mail, User as UserIcon, Sparkles, ArrowRight } from "lucide-react";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -24,7 +25,6 @@ export default function Register() {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [validationErrors, setValidationErrors] = useState({});
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       const from = location.state?.from?.pathname || "/";
@@ -32,14 +32,12 @@ export default function Register() {
     }
   }, [isAuthenticated, navigate, location]);
 
-  // Clear error when component unmounts
   useEffect(() => {
     return () => {
       dispatch(clearError());
     };
   }, [dispatch]);
 
-  // Calculate password strength
   useEffect(() => {
     const password = formData.password;
     let strength = 0;
@@ -72,7 +70,6 @@ export default function Register() {
       [name]: value,
     });
 
-    // Clear validation error for this field
     if (validationErrors[name]) {
       setValidationErrors({
         ...validationErrors,
@@ -84,21 +81,18 @@ export default function Register() {
   const validateForm = () => {
     const errors = {};
 
-    // Name validation
     if (!formData.name.trim()) {
       errors.name = "Name is required";
     } else if (formData.name.trim().length < 2) {
       errors.name = "Name must be at least 2 characters";
     }
 
-    // Email validation
     if (!formData.email.trim()) {
       errors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = "Email is invalid";
     }
 
-    // Password validation
     if (!formData.password) {
       errors.password = "Password is required";
     } else if (formData.password.length < 6) {
@@ -108,7 +102,6 @@ export default function Register() {
         "Password must contain uppercase, lowercase, and number";
     }
 
-    // Confirm password validation
     if (!formData.confirmPassword) {
       errors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
@@ -119,7 +112,6 @@ export default function Register() {
     return Object.keys(errors).length === 0;
   };
 
-  // In your Register.jsx, add this to handleSubmit:
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -128,33 +120,42 @@ export default function Register() {
     }
 
     const { name, email, password } = formData;
-
-    console.log("Before dispatch registerUser");
     const result = await dispatch(registerUser({ name, email, password }));
-    console.log("After dispatch registerUser", result);
 
     if (result.meta.requestStatus === "fulfilled") {
-      console.log("Registration successful, should navigate");
+      console.log("Registration successful");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4 py-12">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
+
+      <div className="relative z-10 max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Create Account
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 backdrop-blur-sm text-emerald-400 rounded-full mb-6 border border-emerald-500/20">
+            <Sparkles size={16} className="animate-pulse" />
+            <span className="text-sm font-medium">Join Us Today</span>
+          </div>
+          <h1 className="text-4xl font-bold mb-2">
+            <span className="bg-gradient-to-r from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
+              Create Account
+            </span>
           </h1>
-          <p className="text-gray-600">Join our community today</p>
+          <p className="text-gray-400">Start your journey with us</p>
         </div>
 
         {/* Register Form */}
-        <div className="bg-white rounded-xl shadow-sm p-8">
+        <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm backdrop-blur-xl">
                 {error}
               </div>
             )}
@@ -163,25 +164,28 @@ export default function Register() {
             <div>
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-300 mb-2"
               >
                 Full Name
               </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 border ${
-                  validationErrors.name
-                    ? "border-red-300 focus:ring-red-500"
-                    : "border-gray-300 focus:ring-[#7fd3e6]"
-                } rounded-lg focus:ring-2 focus:border-transparent transition-colors`}
-                placeholder="John Doe"
-              />
+              <div className="relative">
+                <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className={`w-full pl-12 pr-4 py-3 bg-slate-900/50 border rounded-xl text-white placeholder-gray-500 focus:ring-2 transition-colors ${
+                    validationErrors.name
+                      ? "border-red-500/50 focus:ring-red-500"
+                      : "border-white/10 focus:ring-emerald-500 focus:border-emerald-500"
+                  }`}
+                  placeholder="John Doe"
+                />
+              </div>
               {validationErrors.name && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm text-red-400">
                   {validationErrors.name}
                 </p>
               )}
@@ -191,25 +195,28 @@ export default function Register() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-300 mb-2"
               >
                 Email Address
               </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 border ${
-                  validationErrors.email
-                    ? "border-red-300 focus:ring-red-500"
-                    : "border-gray-300 focus:ring-[#7fd3e6]"
-                } rounded-lg focus:ring-2 focus:border-transparent transition-colors`}
-                placeholder="your@email.com"
-              />
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`w-full pl-12 pr-4 py-3 bg-slate-900/50 border rounded-xl text-white placeholder-gray-500 focus:ring-2 transition-colors ${
+                    validationErrors.email
+                      ? "border-red-500/50 focus:ring-red-500"
+                      : "border-white/10 focus:ring-emerald-500 focus:border-emerald-500"
+                  }`}
+                  placeholder="your@email.com"
+                />
+              </div>
               {validationErrors.email && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm text-red-400">
                   {validationErrors.email}
                 </p>
               )}
@@ -219,68 +226,39 @@ export default function Register() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-300 mb-2"
               >
                 Password
               </label>
               <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 border ${
+                  className={`w-full pl-12 pr-12 py-3 bg-slate-900/50 border rounded-xl text-white placeholder-gray-500 focus:ring-2 transition-colors ${
                     validationErrors.password
-                      ? "border-red-300 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-[#7fd3e6]"
-                  } rounded-lg focus:ring-2 focus:border-transparent transition-colors`}
+                      ? "border-red-500/50 focus:ring-red-500"
+                      : "border-white/10 focus:ring-emerald-500 focus:border-emerald-500"
+                  }`}
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
                 >
                   {showPassword ? (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
+                    <EyeOff className="w-5 h-5" />
                   ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                      />
-                    </svg>
+                    <Eye className="w-5 h-5" />
                   )}
                 </button>
               </div>
               {validationErrors.password && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm text-red-400">
                   {validationErrors.password}
                 </p>
               )}
@@ -289,22 +267,22 @@ export default function Register() {
               {formData.password && (
                 <div className="mt-2">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-gray-600">
+                    <span className="text-xs text-gray-400">
                       Password Strength:
                     </span>
                     <span
                       className={`text-xs font-medium ${
                         passwordStrength <= 1
-                          ? "text-red-600"
+                          ? "text-red-400"
                           : passwordStrength <= 3
-                            ? "text-yellow-600"
-                            : "text-green-600"
+                            ? "text-yellow-400"
+                            : "text-green-400"
                       }`}
                     >
                       {getPasswordStrengthText()}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div className="w-full bg-slate-700 rounded-full h-1.5">
                     <div
                       className={`h-1.5 rounded-full transition-all ${getPasswordStrengthColor()}`}
                       style={{ width: `${(passwordStrength / 5) * 100}%` }}
@@ -318,68 +296,39 @@ export default function Register() {
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-300 mb-2"
               >
                 Confirm Password
               </label>
               <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   id="confirmPassword"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 border ${
+                  className={`w-full pl-12 pr-12 py-3 bg-slate-900/50 border rounded-xl text-white placeholder-gray-500 focus:ring-2 transition-colors ${
                     validationErrors.confirmPassword
-                      ? "border-red-300 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-[#7fd3e6]"
-                  } rounded-lg focus:ring-2 focus:border-transparent transition-colors`}
+                      ? "border-red-500/50 focus:ring-red-500"
+                      : "border-white/10 focus:ring-emerald-500 focus:border-emerald-500"
+                  }`}
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
                 >
                   {showConfirmPassword ? (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
+                    <EyeOff className="w-5 h-5" />
                   ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                      />
-                    </svg>
+                    <Eye className="w-5 h-5" />
                   )}
                 </button>
               </div>
               {validationErrors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm text-red-400">
                   {validationErrors.confirmPassword}
                 </p>
               )}
@@ -391,17 +340,17 @@ export default function Register() {
                 type="checkbox"
                 id="terms"
                 required
-                className="mt-1 rounded border-gray-300 text-[#12725c] focus:ring-[#7fd3e6]"
+                className="mt-1 w-4 h-4 rounded border-gray-600 bg-slate-900/50 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0"
               />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
+              <label htmlFor="terms" className="ml-2 text-sm text-gray-400">
                 I agree to the{" "}
-                <a href="#" className="text-[#12725c] hover:underline">
+                <Link to="#" className="text-emerald-400 hover:text-emerald-300 transition-colors">
                   Terms of Service
-                </a>{" "}
+                </Link>{" "}
                 and{" "}
-                <a href="#" className="text-[#12725c] hover:underline">
+                <Link to="#" className="text-emerald-400 hover:text-emerald-300 transition-colors">
                   Privacy Policy
-                </a>
+                </Link>
               </label>
             </div>
 
@@ -409,7 +358,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-[#7fd3e6] text-white rounded-lg font-medium hover:bg-[#5bb9d0] focus:ring-4 focus:ring-[#7fd3e6] focus:ring-opacity-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-emerald-500/25 focus:ring-4 focus:ring-emerald-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -436,18 +385,21 @@ export default function Register() {
                   Creating account...
                 </span>
               ) : (
-                "Create Account"
+                <>
+                  Create Account
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </>
               )}
             </button>
           </form>
 
           {/* Login Link */}
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-400">
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="text-[#12725c] hover:text-[#0f5a4a] font-medium"
+                className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
               >
                 Sign in
               </Link>
