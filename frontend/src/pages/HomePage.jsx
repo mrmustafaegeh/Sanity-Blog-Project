@@ -23,9 +23,10 @@ export default function HomePage() {
   } = useGetFeaturedPostsQuery(1);
 
   const {
-    data: categories = [],
+    data: categoriesData,
     isLoading: categoriesLoading,
   } = useGetCategoriesQuery();
+  const categories = categoriesData?.categories || [];
 
   const {
     data: popularPosts = [],

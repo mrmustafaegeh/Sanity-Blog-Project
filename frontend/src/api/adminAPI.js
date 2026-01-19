@@ -51,6 +51,55 @@ export const adminAPI = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
+
+    getAdminUsers: builder.query({
+      query: (params) => ({
+        url: "/admin/users",
+        params,
+      }),
+      providesTags: ["User"],
+    }),
+
+    deleteUser: builder.mutation({
+      query: (userId) => ({
+        url: `/admin/users/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    getAdminComments: builder.query({
+      query: (params) => ({
+        url: "/admin/comments",
+        params,
+      }),
+      providesTags: ["Comments"],
+    }),
+
+    toggleCommentApproval: builder.mutation({
+      query: (commentId) => ({
+        url: `/admin/comments/${commentId}/toggle-approval`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Comments"],
+    }),
+
+    deleteComment: builder.mutation({
+      query: (commentId) => ({
+        url: `/admin/comments/${commentId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Comments"],
+    }),
+
+    seedData: builder.mutation({
+      query: (data) => ({
+        url: "/admin/seed",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Post", "Comments", "AdminAnalytics"],
+    }),
   }),
 });
 
@@ -61,4 +110,10 @@ export const {
   useGetAdminPostsQuery,
   useUpdatePostStatusMutation,
   useUpdateUserRoleMutation,
+  useGetAdminUsersQuery,
+  useDeleteUserMutation,
+  useGetAdminCommentsQuery,
+  useToggleCommentApprovalMutation,
+  useDeleteCommentMutation,
+  useSeedDataMutation,
 } = adminAPI;

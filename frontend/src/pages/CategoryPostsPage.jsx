@@ -15,23 +15,15 @@ export default function CategoryPostsPage() {
   const [page, setPage] = useState(1);
 
   const {
-    data: postsData,
+    data: categoryData,
     isLoading,
     isError,
     error,
-  } = useGetPostsByCategoryQuery({
-    categoryId: slug,
-    page,
-    limit: 12,
-  });
+  } = useGetCategoryBySlugQuery(slug);
 
-  const { data: categories = [] } = useGetCategoriesQuery();
-
-  const category = categories.find(
-    (cat) => cat.slug?.current === slug || cat._id === slug
-  );
-  const posts = postsData?.posts || [];
-  const totalPages = postsData?.totalPages || 1;
+  const category = categoryData?.category;
+  const posts = categoryData?.posts || [];
+  const totalPages = categoryData?.pages || 1;
 
   if (isLoading) {
     return (

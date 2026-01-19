@@ -9,20 +9,7 @@ export const postsAPI = apiSlice.injectEndpoints({
         url: "/posts",
         params: { page, limit, category, sort, search },
       }),
-      transformResponse: (response) => {
-        // Handle paginated response
-        if (response && response.posts) {
-          return {
-            posts: response.posts,
-            pagination: response.pagination,
-          };
-        }
-        // If response is already an array, wrap it
-        if (Array.isArray(response)) {
-          return { posts: response, pagination: null };
-        }
-        return { posts: [], pagination: null };
-      },
+      transformResponse: (response) => response,
       providesTags: ["Posts"],
     }),
 
@@ -111,16 +98,7 @@ export const postsAPI = apiSlice.injectEndpoints({
         url: "/categories",
         params: { page, limit },
       }),
-      transformResponse: (response) => {
-        // Extract array from response
-        if (response && response.categories) {
-          return response.categories;
-        }
-        if (Array.isArray(response)) {
-          return response;
-        }
-        return [];
-      },
+      transformResponse: (response) => response,
       providesTags: ["Categories"],
     }),
 
@@ -176,19 +154,7 @@ export const postsAPI = apiSlice.injectEndpoints({
         url: "/search",
         params: { q, page, limit },
       }),
-      transformResponse: (response) => {
-        // Handle search results
-        if (response && response.posts) {
-          return {
-            posts: response.posts,
-            pagination: response.pagination,
-          };
-        }
-        if (Array.isArray(response)) {
-          return { posts: response, pagination: null };
-        }
-        return { posts: [], pagination: null };
-      },
+      transformResponse: (response) => response,
       providesTags: ["Posts"],
     }),
   }),

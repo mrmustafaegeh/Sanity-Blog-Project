@@ -106,6 +106,10 @@ const postSchema = new mongoose.Schema(
     publishedAt: {
       type: Date,
     },
+    isSeedData: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

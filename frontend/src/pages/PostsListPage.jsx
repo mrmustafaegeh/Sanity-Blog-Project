@@ -19,23 +19,26 @@ import {
 export default function BlogListPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState("grid");
-  const [localSearch, setLocalSearch] = useState("");
+  const [localSearch, setLocalSearch] = useState(searchParams.get("search") || "");
 
   const page = Number(searchParams.get("page")) || 1;
   const category = searchParams.get("category") || null;
   const sort = searchParams.get("sort") || "newest";
+  const search = searchParams.get("search") || "";
 
   const { data, isLoading, isError, error } = useGetPostsQuery({
     page,
     category,
     sort,
+    search,
     limit: 12,
   });
 
-  const { data: categories = [] } = useGetCategoriesQuery();
+  const { data: categoriesData } = useGetCategoriesQuery();
+  const categories = categoriesData?.categories || [];
 
   const posts = data?.posts || [];
-  const totalPages = data?.totalPages || 1;
+  const totalPages = data?.pages || 1;
   const totalPosts = data?.total || 0;
 
   const handlePageChange = (newPage) => {
@@ -69,9 +72,19 @@ export default function BlogListPage() {
     });
   };
 
-  const filteredPosts = posts.filter(post =>
-    post.title.toLowerCase().includes(localSearch.toLowerCase())
-  );
+  const handleSearchChange = (value) => {
+    setLocalSearch(value);
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      if (value) {
+        newParams.set("search", value);
+      } else {
+        newParams.delete("search");
+      }
+      newParams.set("page", "1");
+      return newParams;
+    });
+  };
 
   if (isLoading) {
     return (
@@ -162,7 +175,7 @@ export default function BlogListPage() {
                   type="text"
                   placeholder="Search articles..."
                   value={localSearch}
-                  onChange={(e) => setLocalSearch(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-white placeholder-gray-500 text-sm transition-all"
                 />
               </div>
@@ -243,7 +256,7 @@ export default function BlogListPage() {
         </div>
 
         {/* Posts */}
-        {filteredPosts.length === 0 ? (
+        {posts.length === 0 ? (
           <div className="bg-slate-800/50 backdrop-blur-xl rounded-3xl border border-white/10 p-12 text-center shadow-xl">
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-2xl font-bold text-white mb-2">
@@ -278,7 +291,7 @@ export default function BlogListPage() {
                   : "space-y-6"
               } mb-12`}
             >
-              {filteredPosts.map((post) => (
+              {posts.map((post) => (
                 <Link
                   key={post._id}
                   to={`/blog/${encodeURIComponent(post.slug?.current || post.slug)}`}

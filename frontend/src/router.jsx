@@ -9,8 +9,10 @@ import Register from "./pages/form/Register";
 import Profile from "./pages/ProfilePage";
 import SubmitPost from "./pages/SubmitPost";
 import UserSubmissions from "./pages/UserSubmissions";
-import PendingPosts from "./pages/admin/PendingPosts";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminComments from "./pages/admin/AdminComments";
+import AdminSettings from "./pages/admin/AdminSettings";
 import ProtectedRoute from "./features/auth/ProtectedRoute";
 import AdminRoute from "./pages/admin/AdminRoute";
 
@@ -67,19 +69,26 @@ export default function AppRouter() {
       />
 
       <Route
-        path="/admin/pending"
+        path="/admin/users"
         element={
           <AdminRoute>
-            <PendingPosts />
+            <AdminUsers />
           </AdminRoute>
         }
       />
-
       <Route
-        path="/admin/analytics"
+        path="/admin/comments"
         element={
           <AdminRoute>
-            <div>Analytics Page</div>
+            <AdminComments />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <AdminRoute>
+            <AdminSettings />
           </AdminRoute>
         }
       />

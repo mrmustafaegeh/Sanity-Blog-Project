@@ -27,6 +27,10 @@ const commentSchema = new mongoose.Schema(
       ref: "Comment",
       default: null,
     },
+    isSeedData: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

@@ -1,9 +1,21 @@
-// frontend/src/components/layout/Layout.jsx
+import { useLocation } from "react-router-dom";
 import Navbar from "./Header/Navbar";
 import Footer from "./Footer/Footer";
 import { Toaster } from "react-hot-toast";
 
 export default function Layout({ children }) {
+  const location = useLocation();
+  const isAdminPath = location.pathname.startsWith("/admin");
+
+  if (isAdminPath) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <main>{children}</main>
+        <Toaster position="top-right" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
       <Navbar />
