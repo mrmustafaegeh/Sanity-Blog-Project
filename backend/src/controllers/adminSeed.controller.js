@@ -1,4 +1,4 @@
-import { faker } from "@faker-js/faker";
+import { fakerEN as faker } from "@faker-js/faker";
 import User from "../models/User.js";
 import Post from "../models/Post.js";
 import Comment from "../models/Comment.js";
@@ -36,9 +36,10 @@ export const seedPlatformData = async (req, res) => {
     // 3. Generate Posts
     const postsToInsert = [];
     for (let i = 0; i < limit; i++) {
-        const title = faker.lorem.sentence({ min: 5, max: 10 });
+        const title = faker.hacker.phrase().replace(/\.$/, "");
         const author = authors[Math.floor(Math.random() * authors.length)];
-        const postCategories = [categories[Math.floor(Math.random() * categories.length)]._id];
+        const shuffledCats = [...categories].sort(() => 0.5 - Math.random());
+        const postCategories = shuffledCats.slice(0, Math.floor(Math.random() * 3) + 1).map(c => c._id);
         
         const views = faker.number.int({ min: 100, max: 10000 });
         const likesCount = faker.number.int({ min: 10, max: Math.min(views, 1000) });
@@ -46,8 +47,10 @@ export const seedPlatformData = async (req, res) => {
         postsToInsert.push({
             title,
             slug: slugify(title, { lower: true }) + "-" + faker.string.alphanumeric(5),
-            excerpt: faker.lorem.paragraph(1),
-            content: faker.lorem.paragraphs(5, "<br/><br/>"),
+            excerpt: faker.hacker.phrase() + " " + faker.hacker.phrase(),
+            content: Array.from({ length: 20 }, () => 
+              `<p>${faker.hacker.phrase()} ${faker.hacker.phrase()} ${faker.hacker.phrase()}. ${faker.hacker.phrase()} ${faker.hacker.phrase()}.</p>`
+            ).join("<br/><br/>"),
             author: author._id,
             categories: postCategories,
             status: "published",
@@ -57,11 +60,13 @@ export const seedPlatformData = async (req, res) => {
             difficulty: faker.helpers.arrayElement(["beginner", "intermediate", "advanced"]),
             isFeatured: Math.random() > 0.9,
             publishedAt: faker.date.past(),
+            tags: Array.from({ length: 3 }, () => faker.hacker.adjective()),
             isSeedData: true, // Mark so we can cleanup
             mainImage: {
-                url: `https://picsum.photos/seed/${faker.string.uuid()}/800/600`,
+                url: `https://picsum.photos/seed/${faker.string.uuid()}/1200/800`,
                 alt: title
-            }
+            },
+            aiSummary: "In summary: " + faker.hacker.phrase() + " " + faker.hacker.phrase()
         });
     }
 
@@ -76,7 +81,7 @@ export const seedPlatformData = async (req, res) => {
             commentsToInsert.push({
                 postId: post._id.toString(),
                 author: user._id,
-                content: faker.lorem.sentence(),
+                content: faker.hacker.phrase(),
                 isApproved: true,
                 isSeedData: true
             });

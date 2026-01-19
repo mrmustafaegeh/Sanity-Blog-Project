@@ -16,6 +16,7 @@
     "@sanity/client": "^7.13.2",
     "@sanity/image-url": "^2.0.2",
     "@tailwindcss/vite": "^4.1.12",
+    "animejs": "^4.2.2",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.540.0",

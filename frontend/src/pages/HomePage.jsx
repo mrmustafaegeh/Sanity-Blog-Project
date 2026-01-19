@@ -9,6 +9,8 @@ import {
 import { Calendar, User, ArrowRight, Clock, TrendingUp, Sparkles, Eye, Heart, Zap } from "lucide-react";
 import FeaturedPost from "../components/blog/FeaturedPost";
 import PostCard from "../components/blog/PostCard";
+import { useScrollReveal } from "../hooks/useScrollReveal";
+import { useRef } from "react";
 
 export default function HomePage() {
   const {
@@ -34,18 +36,19 @@ export default function HomePage() {
 
   const featuredPost = featuredPosts[0] || recentPosts[0] || null;
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-60 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 right-1/3 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-      </div>
+  // Scroll Reveal Refs
+  const heroTextRef = useScrollReveal({ delay: 100 }, 'left');
+  const heroCardRef = useScrollReveal({ delay: 300 }, 'right');
+  const categoriesRef = useScrollReveal({ delay: 100 }, 'bottom');
+  const recentPostsRef = useScrollReveal({ delay: 100 }, 'bottom');
+  const popularRef = useScrollReveal({ delay: 100 }, 'bottom');
+  const newsletterRef = useScrollReveal({ delay: 100, scale: [0.95, 1] }, 'bottom');
 
+  return (
+    <div className="min-h-screen">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Hero Section */}
-        <section className="mb-20">
+        <section ref={heroTextRef} className="mb-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
             <div className="space-y-8">
@@ -88,12 +91,13 @@ export default function HomePage() {
 
             {/* Featured Card */}
             {!featuredLoading && featuredPost && (
-              <Link
-                to={`/blog/${encodeURIComponent(featuredPost.slug?.current || featuredPost.slug)}`}
-                className="group relative"
-              >
+              <div ref={heroCardRef}>
+                <Link
+                  to={`/blog/${encodeURIComponent(featuredPost.slug?.current || featuredPost.slug)}`}
+                  className="group relative block"
+                >
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                <div className="relative bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+                <div className="relative bg-slate-800/90 backdrop-blur-md rounded-3xl overflow-hidden border border-white/10 shadow-2xl transform-gpu">
                   <div className="relative h-80 overflow-hidden">
                     <img
                       src={featuredPost.mainImage?.asset?.url || featuredPost.mainImage?.url || 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800'}
@@ -103,9 +107,16 @@ export default function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <span className="inline-block px-3 py-1 bg-emerald-500/20 backdrop-blur-sm text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30 mb-3">
-                      FEATURED
-                    </span>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className="px-3 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-full shadow-lg shadow-emerald-500/20">
+                        FEATURED
+                      </span>
+                      {featuredPost.categories?.map((cat, i) => (
+                        <span key={i} className="px-3 py-1 bg-white/10 backdrop-blur-md text-white text-[10px] font-bold rounded-full border border-white/20">
+                          {cat.title || cat}
+                        </span>
+                      ))}
+                    </div>
                     <h3 className="text-2xl font-bold text-white mb-2 line-clamp-2 group-hover:text-emerald-400 transition-colors">
                       {featuredPost.title}
                     </h3>
@@ -142,12 +153,13 @@ export default function HomePage() {
                   </div>
                 </div>
               </Link>
-            )}
+            </div>
+          )}
           </div>
         </section>
 
         {/* Categories Section */}
-        <section className="mb-20">
+        <section ref={categoriesRef} className="mb-20">
           <div className="flex items-center justify-between mb-12">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Explore Topics</h2>
@@ -174,7 +186,7 @@ export default function HomePage() {
                 <Link
                   key={category._id}
                   to={`/categories/${category.slug?.current || category.slug}`}
-                  className="group relative bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 hover:border-emerald-500/50 transition-all duration-300 hover:scale-105 overflow-hidden"
+                  className="group relative bg-slate-800/50 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:border-emerald-500/50 transition-all duration-300 hover:scale-[1.03] overflow-hidden transform-gpu"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-cyan-500/0 group-hover:from-emerald-500/10 group-hover:to-cyan-500/10 transition-all duration-300"></div>
                   <div className="relative">
@@ -195,7 +207,7 @@ export default function HomePage() {
         </section>
 
         {/* Recent Posts */}
-        <section className="mb-20">
+        <section ref={recentPostsRef} className="mb-20">
           <div className="flex items-center justify-between mb-12">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Latest Articles</h2>
@@ -226,7 +238,7 @@ export default function HomePage() {
                 <Link
                   key={post._id}
                   to={`/blog/${encodeURIComponent(post.slug?.current || post.slug)}`}
-                  className="group relative bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 hover:border-emerald-500/50 transition-all duration-300 hover:scale-[1.02]"
+                  className="group relative bg-slate-800/50 backdrop-blur-md rounded-2xl overflow-hidden border border-white/10 hover:border-emerald-500/50 transition-all duration-300 hover:scale-[1.02] transform-gpu"
                 >
                   <div className="relative h-48 overflow-hidden">
                     <img
@@ -235,11 +247,13 @@ export default function HomePage() {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
-                    {post.categories?.[0] && (
-                      <span className="absolute top-4 left-4 px-3 py-1 bg-emerald-500/20 backdrop-blur-sm text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30">
-                        {typeof post.categories[0] === 'string' ? post.categories[0] : post.categories[0].title}
-                      </span>
-                    )}
+                    <div className="absolute top-4 left-4 flex flex-wrap gap-2 pr-4">
+                      {post.categories?.map((cat, i) => (
+                        <span key={i} className="px-3 py-1 bg-emerald-500/20 backdrop-blur-sm text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/30 whitespace-nowrap">
+                          {cat.title || cat}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="p-6">
@@ -267,24 +281,24 @@ export default function HomePage() {
         </section>
 
         {/* Popular Posts + CTA */}
-        <section className="grid lg:grid-cols-3 gap-8">
+        <section ref={popularRef} className="grid lg:grid-cols-3 gap-8">
           {/* Info Cards */}
           <div className="lg:col-span-2 grid md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 backdrop-blur-xl rounded-2xl p-6 border border-emerald-500/20">
+            <div className="bg-emerald-500/10 backdrop-blur-md rounded-2xl p-6 border border-emerald-500/20 transform-gpu">
               <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
                 <Sparkles className="w-6 h-6 text-emerald-400" />
               </div>
               <h4 className="text-white font-semibold mb-2">Expert Authors</h4>
               <p className="text-gray-400 text-sm">Learn from industry professionals with real-world experience</p>
             </div>
-            <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/20">
+            <div className="bg-cyan-500/10 backdrop-blur-md rounded-2xl p-6 border border-cyan-500/20 transform-gpu">
               <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center mb-4">
                 <TrendingUp className="w-6 h-6 text-cyan-400" />
               </div>
               <h4 className="text-white font-semibold mb-2">Trending Topics</h4>
               <p className="text-gray-400 text-sm">Stay ahead with the latest in tech and development</p>
             </div>
-            <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl rounded-2xl p-6 border border-purple-500/20">
+            <div className="bg-purple-500/10 backdrop-blur-md rounded-2xl p-6 border border-purple-500/20 transform-gpu">
               <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4">
                 <Heart className="w-6 h-6 text-purple-400" />
               </div>
@@ -296,7 +310,7 @@ export default function HomePage() {
           {/* Trending Sidebar */}
           {popularPosts.length > 0 && (
             <div className="lg:col-span-1">
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 sticky top-24">
+              <div className="bg-slate-800/50 backdrop-blur-md rounded-2xl p-6 border border-white/10 sticky top-24 transform-gpu">
                 <div className="flex items-center gap-2 mb-6">
                   <TrendingUp className="w-5 h-5 text-emerald-400" />
                   <h3 className="font-bold text-white">Trending Now</h3>
@@ -329,7 +343,7 @@ export default function HomePage() {
         </section>
 
         {/* Newsletter CTA */}
-        <section className="mt-20">
+        <section ref={newsletterRef} className="mt-20">
           <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-3xl p-12">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4xIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-20"></div>
             

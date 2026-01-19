@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 import Navbar from "./Header/Navbar";
 import Footer from "./Footer/Footer";
 import { Toaster } from "react-hot-toast";
+import AnimatedBackground from "../common/AnimatedBackground";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -17,9 +18,10 @@ export default function Layout({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
+    <div className="min-h-screen flex flex-col relative overflow-x-hidden">
+      <AnimatedBackground />
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {children}
       </main>
       <Footer />

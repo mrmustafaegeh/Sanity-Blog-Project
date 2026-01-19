@@ -15,6 +15,9 @@ import {
   Eye,
   Heart,
 } from "lucide-react";
+import { useScrollReveal } from "../hooks/useScrollReveal";
+import { useRef } from "react";
+import PostCard from "../features/posts/components/PostCard";
 
 export default function BlogListPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -86,9 +89,12 @@ export default function BlogListPage() {
     });
   };
 
+  const headerRef = useScrollReveal({ delay: 100 }, 'left');
+  const gridRef = useScrollReveal({ delay: 300 }, 'right');
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      <div className="min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
@@ -112,7 +118,7 @@ export default function BlogListPage() {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-white mb-2">
@@ -133,16 +139,10 @@ export default function BlogListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
-
+    <div className="min-h-screen">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="mb-12 text-center">
+        <div ref={headerRef} className="mb-12 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 backdrop-blur-sm text-emerald-400 rounded-full mb-4 border border-emerald-500/20">
             <Sparkles size={16} className="animate-pulse" />
             <span className="text-sm font-medium">
@@ -165,7 +165,7 @@ export default function BlogListPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-slate-800/50 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-8 shadow-xl">
+        <div className="bg-slate-800/50 backdrop-blur-md rounded-3xl border border-white/10 p-6 mb-8 shadow-xl transform-gpu">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-6 lg:space-y-0 gap-4">
             {/* Search */}
             <div className="w-full lg:w-1/3">
@@ -256,8 +256,9 @@ export default function BlogListPage() {
         </div>
 
         {/* Posts */}
-        {posts.length === 0 ? (
-          <div className="bg-slate-800/50 backdrop-blur-xl rounded-3xl border border-white/10 p-12 text-center shadow-xl">
+        <div ref={gridRef}>
+          {posts.length === 0 ? (
+          <div className="bg-slate-800/50 backdrop-blur-md rounded-3xl border border-white/10 p-12 text-center shadow-xl transform-gpu">
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-2xl font-bold text-white mb-2">
               No posts found
@@ -287,94 +288,18 @@ export default function BlogListPage() {
             <div
               className={`${
                 viewMode === "grid"
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                  : "space-y-6"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                  : "space-y-8"
               } mb-12`}
             >
               {posts.map((post) => (
-                <Link
-                  key={post._id}
-                  to={`/blog/${encodeURIComponent(post.slug?.current || post.slug)}`}
-                  className={`group bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-white/10 hover:border-emerald-500/50 ${
-                    viewMode === "list" ? "flex flex-col md:flex-row" : ""
-                  }`}
-                >
-                  <div
-                    className={`relative overflow-hidden ${viewMode === "list" ? "md:w-1/3" : ""}`}
-                  >
-                    <img
-                      src={
-                        post.mainImage?.asset?.url ||
-                        post.mainImage?.url ||
-                        post.image ||
-                        `https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80`
-                      }
-                      alt={post.title}
-                      className={`w-full object-cover group-hover:scale-110 transition-transform duration-500 ${
-                        viewMode === "list" ? "h-full min-h-[200px]" : "h-56"
-                      }`}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
-                    {post.categories?.length > 0 && (
-                      <span className="absolute top-4 left-4 px-3 py-1 bg-emerald-500/20 backdrop-blur-sm text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30">
-                        {typeof post.categories[0] === 'string' ? post.categories[0] : post.categories[0].title}
-                      </span>
-                    )}
-                  </div>
-
-                  <div
-                    className={`p-6 ${viewMode === "list" ? "md:w-2/3 flex flex-col justify-between" : ""}`}
-                  >
-                    <div>
-                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors line-clamp-2">
-                        {post.title}
-                      </h3>
-
-                      <p className="text-gray-400 mb-4 line-clamp-2">
-                        {post.excerpt ||
-                          post.aiSummary ||
-                          "Read this article to learn more..."}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        {post.author?.image?.url ? (
-                          <img
-                            src={post.author.image.url}
-                            alt={post.author.name}
-                            className="w-8 h-8 rounded-full"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4 text-white" />
-                          </div>
-                        )}
-                        <span className="text-gray-400 font-medium">
-                          {post.author?.name || "Anonymous"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-gray-500">
-                        {post.views && (
-                          <span className="flex items-center gap-1">
-                            <Eye className="w-3 h-3" />
-                            {post.views > 1000 ? `${(post.views/1000).toFixed(1)}k` : post.views}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {post.readingTime || post.estimatedReadingTime || 5}m
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
+                <PostCard key={post._id} post={post} />
               ))}
             </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-xl">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-slate-800/50 backdrop-blur-md rounded-2xl p-6 border border-white/10 shadow-xl transform-gpu">
                 <div className="text-sm text-gray-400">
                   Showing page{" "}
                   <span className="font-bold text-emerald-400">{page}</span> of{" "}
@@ -435,6 +360,7 @@ export default function BlogListPage() {
             )}
           </>
         )}
+        </div>
       </div>
     </div>
   );
