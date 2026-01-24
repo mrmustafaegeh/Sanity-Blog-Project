@@ -220,17 +220,6 @@ export default function Navbar() {
                 </>
               )}
 
-              {/* Admin Link */}
-              {user?.isAdmin && (
-                <Link
-                  to="/admin/pending"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-purple-400 bg-purple-500/10 border border-purple-500/20 mt-2"
-                >
-                  <Shield className="w-5 h-5" />
-                  Admin Panel
-                </Link>
-              )}
 
               {/* User Menu for Mobile */}
               <div className="mt-4 px-4">

@@ -1,6 +1,7 @@
 // frontend/src/components/blog/FeaturedPost.jsx
 import { Link } from "react-router-dom";
 import { Calendar, User, Clock, ArrowRight } from "lucide-react";
+import { generateSrcSet, getOptimizedUrl } from "../../utils/imageOptimizer";
 
 export default function FeaturedPost({ post }) {
   if (!post) return null;
@@ -66,14 +67,25 @@ export default function FeaturedPost({ post }) {
           <div className="relative">
             <div className="absolute -inset-4 bg-gradient-to-r from-emerald-400 to-teal-300 rounded-2xl blur-xl opacity-20" />
             <img
-              src={
+              src={getOptimizedUrl(
                 post.mainImage?.url ||
                 post.mainImage?.asset?.url ||
-                "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-              }
+                "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+                1000
+              )}
+              srcSet={generateSrcSet(
+                post.mainImage?.url ||
+                post.mainImage?.asset?.url ||
+                "https://images.unsplash.com/photo-1499750310107-5fef28a66643",
+                [600, 800, 1000]
+              )}
+              sizes="(max-width: 768px) 100vw, 50vw"
               alt={post.title}
+              width={1000}
+              height={640}
               className="relative rounded-xl shadow-lg w-full h-64 md:h-80 object-cover"
               loading="eager"
+              fetchPriority="high"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl" />
           </div>

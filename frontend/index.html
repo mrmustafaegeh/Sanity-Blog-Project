@@ -4,11 +4,73 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blogify</title>
-    <link rel="stylesheet" href="./src/App.css" />
+
+    <!-- Preconnect to critical origins -->
+    <link rel="preconnect" href="https://fastly.picsum.photos" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <link
+      rel="preconnect"
+      href="https://sanity-blog-project-qnkm.vercel.app"
+      crossorigin
+    />
+
+    <!-- DNS prefetch for secondary resources -->
+    <link rel="dns-prefetch" href="https://cdn.sanity.io" />
+
+    <!-- Preload critical fonts (if you have custom fonts) -->
+    <!-- <link rel="preload" as="font" type="font/woff2" href="/fonts/your-font.woff2" crossorigin> -->
+
+    <title>Blogify - Modern Tech Blog Platform</title>
+    <meta
+      name="description"
+      content="Discover cutting-edge tech articles, tutorials, and insights from industry experts"
+    />
+
+    <!-- Critical CSS inline (optional - for above-the-fold content) -->
+    <style>
+      /* Prevent FOUC (Flash of Unstyled Content) */
+      #root {
+        min-height: 100vh;
+      }
+      body {
+        margin: 0;
+        background: #0f172a;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      .loading-screen {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f172a;
+        z-index: 9999;
+      }
+      .loading-spinner {
+        width: 3rem;
+        height: 3rem;
+        border: 4px solid #1e293b;
+        border-top-color: #10b981;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Initial loading indicator -->
+      <div class="loading-screen">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

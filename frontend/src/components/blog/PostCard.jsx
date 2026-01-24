@@ -1,10 +1,15 @@
 // frontend/src/components/blog/PostCard.jsx
 import { Link } from "react-router-dom";
 import { Calendar, User, Clock, BookOpen } from "lucide-react";
+import { generateSrcSet, getOptimizedUrl } from "../../utils/imageOptimizer";
 
 export default function PostCard({ post, priority = false }) {
   const readingTime =
     post.readingTime || Math.ceil(post.body?.length / 1000) || 5;
+
+  const imageUrl = post.mainImage?.url ||
+    post.mainImage?.asset?.url ||
+    "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
 
   return (
     <Link
@@ -14,14 +19,15 @@ export default function PostCard({ post, priority = false }) {
       {/* Image Container */}
       <div className="relative overflow-hidden h-48">
         <img
-          src={
-            post.mainImage?.url ||
-            post.mainImage?.asset?.url ||
-            "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-          }
+          src={getOptimizedUrl(imageUrl, 600)}
+          srcSet={generateSrcSet(imageUrl, [400, 600, 800])}
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           alt={post.title}
+          width={542}
+          height={361}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
