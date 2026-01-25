@@ -157,6 +157,14 @@ export const postsAPI = apiSlice.injectEndpoints({
       transformResponse: (response) => response,
       providesTags: ["Posts"],
     }),
+    // Generate AI Summary
+    generateAISummary: builder.mutation({
+      query: (postId) => ({
+        url: `/ai-summary/${postId}`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, postId) => [{ type: "Post", id: postId }],
+    }),
   }),
 });
 
@@ -174,4 +182,5 @@ export const {
   useUpdatePostMutation,
   useDeletePostMutation,
   useSearchPostsQuery,
+  useGenerateAISummaryMutation,
 } = postsAPI;
