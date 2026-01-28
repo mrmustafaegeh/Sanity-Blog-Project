@@ -143,6 +143,7 @@ postSchema.pre("save", function () {
 // 🔹 INDEXES
 //
 postSchema.index({ status: 1, publishedAt: -1 });
+postSchema.index({ status: 1, isFeatured: 1, publishedAt: -1 }); // Optimized for Featured Posts
 postSchema.index({ author: 1 });
 postSchema.index({ categories: 1 });
 postSchema.index({ views: -1 });

@@ -132,7 +132,7 @@ export default function HomePage() {
         </div>
 
         {recentLoading ? (
-          <LoadingGrid count={6} />
+          <LoadingGrid count={9} />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
             {filteredRecentPosts.map((post) => (

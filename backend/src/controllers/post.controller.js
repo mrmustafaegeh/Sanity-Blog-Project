@@ -122,6 +122,7 @@ export const getRecentPosts = async (req, res) => {
     const posts = await Post.find({ status: "published" })
       .populate("author", "name username profileImage")
       .populate("categories", "title slug")
+      .select("title slug excerpt mainImage author categories publishedAt readingTime views likesCount")
       .sort({ publishedAt: -1 })
       .limit(limit)
       .lean();
@@ -142,6 +143,7 @@ export const getFeaturedPosts = async (req, res) => {
     })
       .populate("author", "name username profileImage")
       .populate("categories", "title slug")
+      .select("title slug excerpt mainImage author categories publishedAt readingTime")
       .sort({ publishedAt: -1 })
       .limit(1)
       .lean();

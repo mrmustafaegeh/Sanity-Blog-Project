@@ -260,27 +260,27 @@ export default function PostDetail() {
             </h1>
 
             {/* Author & Meta Info */}
-            <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-6">
-              <div className="flex items-center">
+            <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+              <div className="flex items-center group">
                 {post.author?.image?.url ? (
                   <img
                     src={post.author.image.url}
                     alt={post.author.name}
-                    className="w-10 h-10 rounded-full mr-3"
+                    className="w-12 h-12 rounded-xl mr-3 shadow-md group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center text-white font-bold mr-3 shadow-md">
                     {post.author?.name?.charAt(0) || "U"}
                   </div>
                 )}
                 <div>
                   <Link
                     to={`/author/${post.author?.username}`}
-                    className="font-medium text-gray-900 hover:text-emerald-600 transition-colors"
+                    className="font-bold text-gray-900 hover:text-emerald-600 transition-colors block"
                   >
                     {post.author?.name || "Anonymous"}
                   </Link>
-                  <div className="flex items-center text-sm">
+                  <div className="flex items-center text-xs font-medium text-gray-500 uppercase tracking-wide">
                     <Calendar className="w-3 h-3 mr-1" />
                     {formatDistanceToNow(
                       new Date(post.publishedAt || post.createdAt),
@@ -290,14 +290,16 @@ export default function PostDetail() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-4">
-                <span className="flex items-center">
-                  <Clock className="w-4 h-4 mr-1.5" />
+              <div className="w-px h-8 bg-gray-200 hidden md:block"></div>
+
+              <div className="flex items-center space-x-6">
+                <span className="flex items-center text-sm font-medium">
+                  <Clock className="w-4 h-4 mr-2 text-emerald-500" />
                   {post.readingTime || 5} min read
                 </span>
 
-                <span className="flex items-center">
-                  <Eye className="w-4 h-4 mr-1.5" />
+                <span className="flex items-center text-sm font-medium">
+                  <Eye className="w-4 h-4 mr-2 text-blue-500" />
                   {post.views || 0} views
                 </span>
               </div>
@@ -376,44 +378,48 @@ export default function PostDetail() {
           </div>
 
           {/* Action Bar */}
-          <div className="border-t border-gray-200 pt-6 mb-8">
+          <div className="border-t border-gray-100 pt-8 mb-12">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={handleLike}
-                  className={`inline-flex items-center px-4 py-2 rounded-lg transition-colors ${
+                  className={`group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-300 ${
                     isLiked
-                      ? "bg-red-50 text-red-600 border border-red-200"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? "bg-red-50 text-red-600 shadow-inner ring-1 ring-red-100 border border-transparent"
+                      : "bg-white text-gray-600 border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 hover:border-red-200 hover:text-red-500"
                   }`}
                 >
                   <Heart
-                    className={`w-5 h-5 mr-2 ${isLiked ? "fill-current" : ""}`}
+                    className={`w-5 h-5 transition-transform duration-300 ${
+                      isLiked ? "fill-current scale-110" : "group-hover:scale-110"
+                    }`}
                   />
-                  {post.likesCount || 0} Likes
+                  <span>{post.likesCount || 0} Likes</span>
                 </button>
 
                 <button
                   onClick={handleBookmark}
-                  className={`inline-flex items-center px-4 py-2 rounded-lg transition-colors ${
+                  className={`group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-300 ${
                     isBookmarked
-                      ? "bg-purple-50 text-purple-600 border border-purple-200"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? "bg-purple-50 text-purple-600 shadow-inner ring-1 ring-purple-100 border border-transparent"
+                      : "bg-white text-gray-600 border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 hover:border-purple-200 hover:text-purple-600"
                   }`}
                 >
                   <Bookmark
-                    className={`w-5 h-5 mr-2 ${isBookmarked ? "fill-current" : ""}`}
+                    className={`w-5 h-5 transition-transform duration-300 ${
+                      isBookmarked ? "fill-current scale-110" : "group-hover:scale-110"
+                    }`}
                   />
-                  Bookmark
+                  <span>Bookmark</span>
                 </button>
               </div>
 
               <button
                 onClick={handleShare}
-                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 text-white rounded-lg hover:shadow-lg transition-all"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg shadow-gray-900/20 hover:-translate-y-0.5 active:translate-y-0"
               >
-                <Share2 className="w-5 h-5 mr-2" />
-                Share
+                <Share2 className="w-5 h-5" />
+                <span>Share</span>
               </button>
             </div>
           </div>

@@ -6,9 +6,10 @@ import ErrorBoundary from "./utils/ErrorBoundary";
 import ProtectedRoute from "./features/auth/ProtectedRoute";
 import AdminRoute from "./pages/admin/AdminRoute";
 
-// Lazy routes
-const Home = lazy(() => import("./pages/HomePage"));
+
+import Home from "./pages/HomePage";
 const BlogListPage = lazy(() => import("./pages/PostsListPage"));
+
 const SinglePostPage = lazy(() => import("./pages/SinglePostPage"));
 const CategoriesPage = lazy(() => import("./pages/CategoriesPage"));
 const CategoryPostsPage = lazy(() => import("./pages/CategoryPostsPage"));

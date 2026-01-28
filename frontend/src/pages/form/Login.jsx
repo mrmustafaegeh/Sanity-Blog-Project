@@ -3,16 +3,16 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser, clearError } from "../../store/authSlice";
-import { Eye, EyeOff, Lock, Mail, Sparkles, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Loader2, ArrowRight } from "lucide-react";
+import Button from "../../components/ui/Button";
+import SEO from "../../components/shared/SEO";
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { isAuthenticated, loading, error } = useSelector(
-    (state) => state.auth
-  );
+  const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -23,7 +23,6 @@ export default function Login() {
   useEffect(() => {
     if (isAuthenticated) {
       const user = JSON.parse(localStorage.getItem("user"));
-
       if (user?.role === "admin" || user?.isAdmin) {
         navigate("/admin", { replace: true });
       } else {
@@ -40,10 +39,7 @@ export default function Login() {
   }, [dispatch]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -52,48 +48,40 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4">
-      {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
-
-      <div className="relative z-10 max-w-md w-full">
-        {/* Header */}
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <SEO title="Sign In | Blogify" description="Access your account to manage posts." />
+      
+      <div className="w-full max-w-md animate-in fade-in zoom-in duration-500">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 backdrop-blur-sm text-emerald-400 rounded-full mb-6 border border-emerald-500/20">
-            <Sparkles size={16} className="animate-pulse" />
-            <span className="text-sm font-medium">Welcome Back</span>
-          </div>
-          <h1 className="text-4xl font-bold mb-2">
-            <span className="bg-gradient-to-r from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
-              Sign In
-            </span>
-          </h1>
-          <p className="text-gray-400">Access your account</p>
+          <Link to="/" className="inline-block mb-6 group">
+            <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center font-serif font-bold text-2xl group-hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary/20">
+              B
+            </div>
+          </Link>
+          <h1 className="text-3xl font-serif font-bold text-primary mb-2">Welcome Back</h1>
+          <p className="text-secondary">Sign in to continue to Blogify</p>
         </div>
 
-        {/* Login Form */}
-        <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-8">
+        <div className="bg-surface rounded-3xl border border-border shadow-xl shadow-neutral-200/50 p-8 md:p-10 relative overflow-hidden isolate">
+           {/* Subtle decorative blob */}
+           <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-neutral-100 rounded-full blur-3xl -z-10"></div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Error Message */}
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm backdrop-blur-xl">
+              <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-medium animate-in slide-in-from-top-2">
                 {error}
               </div>
             )}
 
-            {/* Email Field */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-300 mb-2"
+            <div className="space-y-2">
+              <label 
+                htmlFor="email" 
+                className="text-sm font-bold text-primary uppercase tracking-wider ml-1"
               >
-                Email Address
+                Email
               </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tertiary group-focus-within:text-primary transition-colors duration-300" />
                 <input
                   type="email"
                   id="email"
@@ -101,22 +89,29 @@ export default function Login() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                  placeholder="your@email.com"
+                  className="w-full pl-12 pr-4 py-3.5 bg-neutral-50 rounded-xl border border-transparent shadow-inner focus:bg-white focus:border-primary focus:shadow-lg focus:shadow-primary/5 outline-none transition-all duration-300 placeholder:text-tertiary font-medium text-primary"
+                  placeholder="name@example.com"
                 />
               </div>
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-300 mb-2"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <div className="space-y-2">
+               <div className="flex items-center justify-between ml-1">
+                 <label 
+                    htmlFor="password" 
+                    className="text-sm font-bold text-primary uppercase tracking-wider"
+                 >
+                   Password
+                 </label>
+                 <Link 
+                    to="#" 
+                    className="text-xs font-semibold text-secondary hover:text-primary transition-colors"
+                 >
+                    Forgot password?
+                 </Link>
+               </div>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tertiary group-focus-within:text-primary transition-colors duration-300" />
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
@@ -124,101 +119,47 @@ export default function Login() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="w-full pl-12 pr-12 py-3 bg-slate-900/50 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                  className="w-full pl-12 pr-12 py-3.5 bg-neutral-50 rounded-xl border border-transparent shadow-inner focus:bg-white focus:border-primary focus:shadow-lg focus:shadow-primary/5 outline-none transition-all duration-300 placeholder:text-tertiary font-medium text-primary"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-tertiary hover:text-primary transition-colors p-1"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-gray-600 bg-slate-900/50 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0"
-                />
-                <span className="ml-2 text-sm text-gray-400">Remember me</span>
-              </label>
-              <Link
-                to="#"
-                className="text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
-              >
-                Forgot password?
-              </Link>
-            </div>
-
-            {/* Submit Button */}
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-emerald-500/25 focus:ring-4 focus:ring-emerald-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+              className="w-full py-4 text-base font-bold shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300 rounded-xl"
             >
               {loading ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Signing in...
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" /> Signing in...
                 </span>
               ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </>
+                <span className="flex items-center justify-center gap-2">
+                  Sign In <ArrowRight className="w-5 h-5" />
+                </span>
               )}
-            </button>
+            </Button>
           </form>
 
-          {/* Sign Up Link */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-400">
+          <div className="mt-8 text-center pt-6 border-t border-border/50">
+            <p className="text-secondary text-sm">
               Don't have an account?{" "}
               <Link
                 to="/register"
-                className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+                className="font-bold text-primary hover:underline decoration-2 underline-offset-4 transition-all"
               >
-                Sign up
+                Create Account
               </Link>
             </p>
           </div>
-        </div>
-
-        {/* Demo Info */}
-        <div className="mt-6 bg-blue-500/10 border border-blue-500/20 backdrop-blur-xl rounded-xl p-4">
-          <p className="text-xs text-blue-400 font-medium mb-1">
-            Demo Credentials:
-          </p>
-          <p className="text-xs text-blue-300">
-            Create an account or use test credentials after registration
-          </p>
         </div>
       </div>
     </div>
