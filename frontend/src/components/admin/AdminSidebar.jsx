@@ -11,13 +11,15 @@ import {
   X,
   ChevronLeft,
   LogOut,
-  Sparkles
+  Sparkles,
+  Mail
 } from "lucide-react";
 
 const menuItems = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, path: "/admin" },
   { id: "posts", label: "Manage Posts", icon: FileText, path: "/admin?tab=all" },
   { id: "submissions", label: "Submissions", icon: Clock, path: "/admin?tab=pending" },
+  { id: "messages", label: "Messages", icon: Mail, path: "/admin/messages" },
   { id: "comments", label: "Comments", icon: MessageSquare, path: "/admin/comments" },
   { id: "users", label: "Users", icon: Users, path: "/admin/users" },
   { id: "settings", label: "Settings", icon: Settings, path: "/admin/settings" },

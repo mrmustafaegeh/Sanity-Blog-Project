@@ -19,7 +19,7 @@ export default function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col font-sans text-primary">
       <Navbar />
-      <main className="flex-grow w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <main className="flex-grow w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 min-h-[60vh]">
         {children}
       </main>
       <Footer />

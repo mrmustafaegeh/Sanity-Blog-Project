@@ -30,6 +30,7 @@ export default function FeaturedPost({ post }) {
               alt={post.title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               loading="eager"
+              fetchPriority="high"
             />
         </div>
 

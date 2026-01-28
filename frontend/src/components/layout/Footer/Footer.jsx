@@ -2,19 +2,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import {
-  Home,
-  Tag,
-  Info,
-  Mail,
-  BookOpen,
-  FileText,
-  HelpCircle,
   Twitter,
-  Facebook,
   Instagram,
   Github,
   Linkedin,
-  Heart,
   ArrowRight,
 } from "lucide-react";
 import Button from "../../ui/Button";
@@ -52,7 +43,7 @@ function Footer() {
                   placeholder="Email address"
                   className="flex-1 px-3 py-2 bg-surface border border-border rounded-md text-sm text-primary placeholder-secondary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
-                <Button size="small">
+                <Button size="small" aria-label="Subscribe">
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
@@ -107,11 +98,17 @@ function Footer() {
           <div>
             <h3 className="font-semibold text-primary mb-6">Connect</h3>
             <div className="flex gap-4 mb-6">
-              {[Twitter, Github, Linkedin, Instagram].map((Icon, i) => (
+              {[
+                { Icon: Twitter, label: "Twitter" },
+                { Icon: Github, label: "GitHub" },
+                { Icon: Linkedin, label: "LinkedIn" },
+                { Icon: Instagram, label: "Instagram" },
+              ].map(({ Icon, label }) => (
                 <a
-                  key={i}
+                  key={label}
                   href="#"
                   className="text-secondary hover:text-primary transition-colors"
+                  aria-label={label}
                 >
                   <Icon className="w-5 h-5" />
                 </a>

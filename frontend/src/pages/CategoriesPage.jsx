@@ -75,18 +75,7 @@ export default function CategoriesPage() {
     );
   }
 
-  if (isError) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-primary mb-2">Failed to load categories</h2>
-          <Button onClick={() => window.location.reload()}>
-            Retry
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -144,7 +133,7 @@ export default function CategoriesPage() {
           {filtered.map((cat) => (
             <Link
               key={cat._id}
-              to={`/categories/${cat.slug?.current || cat.slug}`}
+              to={`/categories/${(cat.slug?.current || cat.slug || "").toLowerCase()}`}
               className="group relative bg-surface p-6 rounded-xl border border-border hover:border-primary/30 hover:shadow-sm transition-all duration-300 block"
             >
               <div className="flex items-center justify-between mb-4">

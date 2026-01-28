@@ -34,7 +34,7 @@ export const getCategoryBySlug = async (req, res) => {
     const limit = parseInt(req.query.limit) || 12;
     const skip = (page - 1) * limit;
 
-    const category = await Category.findOne({ slug });
+    const category = await Category.findOne({ slug: slug.toLowerCase() });
     if (!category) {
       return res.status(404).json({
         success: false,

@@ -1,17 +1,35 @@
 // frontend/src/components/pages/HomePage.jsx
 import { Link } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   useGetRecentPostsQuery,
   useGetFeaturedPostsQuery,
   useGetCategoriesQuery,
 } from "../api/postsAPI";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import FeaturedPost from "../components/blog/FeaturedPost";
 import PostCard from "../components/blog/PostCard";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
+import LoadingGrid from "../components/ui/LoadingGrid";
+import SEO from "../components/shared/SEO";
+
+const FeaturedSkeleton = () => (
+  <div className="mb-16 md:mb-24 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center animate-pulse">
+    <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-[4/3] rounded-xl bg-neutral-200" />
+    <div className="lg:col-span-5 flex flex-col justify-center space-y-4 lg:pl-4">
+      <div className="h-6 w-24 bg-neutral-200 rounded-full" />
+      <div className="h-12 w-3/4 bg-neutral-200 rounded-lg" />
+      <div className="flex gap-3 pt-2">
+        <div className="h-4 w-20 bg-neutral-200 rounded" />
+        <div className="h-4 w-20 bg-neutral-200 rounded" />
+      </div>
+      <div className="h-20 w-full bg-neutral-200 rounded-lg" />
+      <div className="h-8 w-32 bg-neutral-200 rounded mt-4" />
+    </div>
+  </div>
+);
 
 export default function HomePage() {
   const { data: featuredPosts = [], isLoading: featuredLoading } =
@@ -37,14 +55,6 @@ export default function HomePage() {
     return recentPosts.filter((p) => p._id !== featuredPost._id);
   }, [recentPosts, featuredPost]);
 
-  if (featuredLoading || recentLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-secondary" />
-      </div>
-    );
-  }
-
   if (recentError) {
     return (
       <div className="text-center py-20">
@@ -58,13 +68,18 @@ export default function HomePage() {
 
   return (
     <div className="space-y-16 md:space-y-24">
-      {/* Header / Intro */}
+      <SEO
+        title="Blogify | The Journal"
+        description="Insights on technology, safety, and the future of transportation."
+      />
+
+      {/* Header / Intro - Renders Immediately for LCP */}
       <section className="text-center md:text-left space-y-6 pt-8 md:pt-12 border-b border-border pb-12">
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-primary">
           The Journal.
         </h1>
         <p className="text-xl md:text-2xl text-secondary max-w-2xl leading-relaxed">
-          Insights on technology, safety, and the future of transportation.
+           Insights on technology, safety, and the future of transportation.
         </p>
 
         {/* Categories Bar */}
@@ -79,12 +94,15 @@ export default function HomePage() {
             </Badge>
           </Link>
           {categories.slice(0, 5).map((cat) => (
-             <Link key={cat._id} to={`/categories/${cat.slug?.current || cat.slug}`}>
+            <Link
+              key={cat._id}
+              to={`/categories/${(cat.slug?.current || cat.slug || "").toLowerCase()}`}
+            >
               <Badge
                 variant="outline"
                 size="md"
                 className="px-4 py-2 rounded-full cursor-pointer hover:bg-neutral-100 transition-colors"
-               >
+              >
                 {cat.title}
               </Badge>
             </Link>
@@ -92,25 +110,36 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured / Hero */}
-      {featuredPost && <FeaturedPost post={featuredPost} />}
+      {/* Featured / Hero - Skeleton or Content */}
+      {featuredLoading ? (
+        <FeaturedSkeleton />
+      ) : (
+        featuredPost && <FeaturedPost post={featuredPost} />
+      )}
 
-      {/* Recent Posts Grid */}
+      {/* Recent Posts Grid - Skeleton or Content */}
       <section>
         <div className="flex items-center justify-between mb-8 md:mb-12">
           <h2 className="text-2xl md:text-3xl font-bold text-primary">
             Latest Stories
           </h2>
-          <Link to="/blog" className="text-sm font-medium text-secondary hover:text-primary transition-colors flex items-center gap-1">
+          <Link
+            to="/blog"
+            className="text-sm font-medium text-secondary hover:text-primary transition-colors flex items-center gap-1"
+          >
             View Archive <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-          {filteredRecentPosts.map((post) => (
-            <PostCard key={post._id} post={post} />
-          ))}
-        </div>
+        {recentLoading ? (
+          <LoadingGrid count={6} />
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+            {filteredRecentPosts.map((post) => (
+              <PostCard key={post._id} post={post} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Newsletter / CTA */}
@@ -119,12 +148,13 @@ export default function HomePage() {
           Stay in the loop
         </h3>
         <p className="text-secondary mb-8 max-w-md mx-auto">
-          Get the latest updates and industry insights delivered straight to your inbox.
+           Get the latest updates and industry insights delivered straight to your inbox.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
           <input
             type="email"
             placeholder="Enter your email"
+            aria-label="Email address for newsletter"
             className="flex-1 px-4 py-2.5 rounded-md border border-border focus:ring-2 focus:ring-neutral-200 outline-none"
           />
           <Button>Subscribe</Button>

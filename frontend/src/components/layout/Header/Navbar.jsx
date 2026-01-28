@@ -23,13 +23,10 @@ export default function Navbar() {
 
   const navLinks = [
     { path: "/", label: "Home" },
-    { path: "/blog", label: "Ride" }, // Mapping to 'Ride' etc as requested or keeping functional names?
-    // The user asked for "Ride, Technology, Safety, Community". 
-    // I will map them to existing routes for now or placeholders if routes don't exist.
-    // Assuming standard blog sections:
+    { path: "/blog", label: "Ride" },
     { path: "/categories/technology", label: "Technology" },
-    { path: "/categories/safety", label: "Safety" },
-    { path: "/categories/community", label: "Community" },
+    { path: "/categories", label: "Categories" },
+    { path: "/contact", label: "Contact" },
   ];
 
   // Helper to determine if link is active
@@ -109,6 +106,7 @@ export default function Navbar() {
             <button
               className="md:hidden p-2 text-secondary"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />

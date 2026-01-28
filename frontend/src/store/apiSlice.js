@@ -53,6 +53,7 @@ export const apiSlice = createApi({
     "PendingSubmissions",
     "AdminAnalytics",
     "User",
+    "Contacts",
   ],
   endpoints: () => ({}),
 });

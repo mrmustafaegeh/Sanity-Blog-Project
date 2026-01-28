@@ -15,6 +15,7 @@ import likeRoutes from "./src/routes/like.routes.js";
 import submissionRoutes from "./src/routes/submission.routes.js";
 import aiSummaryRoutes from "./src/routes/aiSummary.routes.js"; // Add this
 import sitemapRoutes from "./src/routes/sitemap.routes.js"; // Add this
+import contactRoutes from "./src/routes/contact.routes.js"; // Add this
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ app.use("/api/views", viewRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/ai-summary", aiSummaryRoutes); // Add this
 app.use("/api/sitemap.xml", sitemapRoutes); // Add this
+app.use("/api/contact", contactRoutes); // Add this
 
 // Health check endpoint
 app.get("/health", (req, res) => {

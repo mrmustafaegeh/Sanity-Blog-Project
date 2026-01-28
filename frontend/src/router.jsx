@@ -21,6 +21,8 @@ const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminComments = lazy(() => import("./pages/admin/AdminComments"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const AdminMessages = lazy(() => import("./pages/admin/AdminMessages"));
 
 function RouteFallback() {
   return (
@@ -79,6 +81,14 @@ export default function AppRouter() {
           element={
             <S>
               <CategoryPostsPage />
+            </S>
+          }
+        />
+        <Route 
+          path="/contact" 
+          element={
+            <S>
+              <ContactPage />
             </S>
           }
         />
@@ -158,6 +168,16 @@ export default function AppRouter() {
             <AdminRoute>
               <S>
                 <AdminComments />
+              </S>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/messages"
+          element={
+            <AdminRoute>
+              <S>
+                <AdminMessages />
               </S>
             </AdminRoute>
           }
