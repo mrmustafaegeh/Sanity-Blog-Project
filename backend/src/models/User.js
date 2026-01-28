@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      select: false, // Security: Don't return password by default
     },
     username: {
       type: String,
@@ -37,6 +38,9 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
       default: "https://i.pravatar.cc/150",
+    },
+    profileImage: {
+      type: String,
     },
     isVerified: {
       type: Boolean,
@@ -60,8 +64,9 @@ const userSchema = new mongoose.Schema(
 );
 
 // Hash password before saving
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+// Hash password before saving
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
 
   try {
     const salt = await bcrypt.genSalt(10);
@@ -71,10 +76,8 @@ userSchema.pre("save", async function (next) {
     if (!this.username && this.email) {
       this.username = this.email.split("@")[0];
     }
-
-    next();
   } catch (error) {
-    next(error);
+    throw error;
   }
 });
 
@@ -83,9 +86,15 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
+// Helper to return safe user object (removes sensitive data)
+userSchema.methods.toSafeObject = function () {
+  const user = this.toObject();
+  delete user.password;
+  delete user.__v;
+  return user;
+};
+
 // Indexes
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
 userSchema.index({ role: 1 });
 
 const User = mongoose.model("User", userSchema);

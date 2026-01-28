@@ -1,6 +1,7 @@
 // controllers/post.controller.js
 import Post from "../models/Post.js";
 import Category from "../models/Category.js";
+import User from "../models/User.js";
 import { generateSummary } from "../services/ai/aiSummary.service.js";
 import { hashContent } from "../utils/hashContent.js";
 
@@ -49,7 +50,7 @@ export const getPosts = async (req, res) => {
 
     const [posts, total] = await Promise.all([
       Post.find(query)
-        .populate("author", "name username email image")
+        .populate("author", "name username email image profileImage")
         .populate("categories", "title slug color")
         .sort(sort)
         .skip(skip)
@@ -78,13 +79,14 @@ export const getPostBySlug = async (req, res) => {
 
     const query = { slug };
 
-    // If not admin, only show published posts
+    // If not admin, only show published posts (or the author's own post)
     if (!req.user?.isAdmin) {
-      query.status = "published";
+       // We can't easily filter by "author OR published" in a simple query without knowing author ID beforehand.
+       // So we fetch first, then check permission.
     }
 
     const post = await Post.findOne(query)
-      .populate("author", "name username email image bio")
+      .populate("author", "name username email image bio profileImage")
       .populate("categories", "title slug color description");
 
     if (!post) {
@@ -95,11 +97,10 @@ export const getPostBySlug = async (req, res) => {
     }
 
     // Check if user can view unpublished post
-    if (
-      post.status !== "published" &&
-      req.user?._id !== post.author?._id &&
-      !req.user?.isAdmin
-    ) {
+    const isAuthor = req.user && req.user._id.toString() === post.author._id.toString();
+    const isAdmin = req.user?.isAdmin;
+
+    if (post.status !== "published" && !isAuthor && !isAdmin) {
       return res.status(403).json({
         success: false,
         message: "You do not have permission to view this post",
@@ -119,7 +120,7 @@ export const getRecentPosts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 6;
 
     const posts = await Post.find({ status: "published" })
-      .populate("author", "name username")
+      .populate("author", "name username profileImage")
       .populate("categories", "title slug")
       .sort({ publishedAt: -1 })
       .limit(limit)
@@ -139,7 +140,7 @@ export const getFeaturedPosts = async (req, res) => {
       status: "published",
       isFeatured: true,
     })
-      .populate("author", "name username")
+      .populate("author", "name username profileImage")
       .populate("categories", "title slug")
       .sort({ publishedAt: -1 })
       .limit(1)
@@ -165,7 +166,7 @@ export const getPopularPosts = async (req, res) => {
       status: "published",
       publishedAt: { $gte: date },
     })
-      .populate("author", "name username")
+      .populate("author", "name username profileImage")
       .populate("categories", "title slug")
       .sort({ views: -1, likesCount: -1 })
       .limit(limit)
@@ -197,7 +198,7 @@ export const getRelatedPosts = async (req, res) => {
       status: "published",
       categories: { $in: post.categories },
     })
-      .populate("author", "name username")
+      .populate("author", "name username profileImage")
       .populate("categories", "title slug")
       .limit(limit)
       .lean();
@@ -226,7 +227,7 @@ export const createPost = async (req, res) => {
     // Generate slug from title
     const slug = title
       .toLowerCase()
-      .replace(/[^\w\s]/g, "")
+      .replace(/[^\w\s-]/g, "") // Allow hyphens too
       .replace(/\s+/g, "-")
       .trim();
 
@@ -244,7 +245,9 @@ export const createPost = async (req, res) => {
     let aiSummary = "";
 
     try {
-      aiSummary = await generateSummary(content);
+      if (content.length > 100) {
+        aiSummary = await generateSummary(content);
+      }
     } catch (aiError) {
       console.error("AI summary generation failed:", aiError);
       // Continue without AI summary
@@ -258,13 +261,14 @@ export const createPost = async (req, res) => {
       categories: categories || [],
       tags: tags || [],
       difficulty: difficulty || "beginner",
-      readingTime: readingTime || Math.ceil(content.length / 1000), // 1 min per 1000 chars
+      // Calculate reading time if not provided
+      readingTime: readingTime || Math.max(1, Math.ceil(content.split(/\s+/).length / 200)),
       mainImage,
       author: req.user._id,
       aiSummary,
       aiHash,
-      status: req.user.isAdmin ? "published" : "pending",
-      publishedAt: req.user.isAdmin ? new Date() : null,
+      status: req.user.role === 'admin' ? "published" : "pending",
+      publishedAt: req.user.role === 'admin' ? new Date() : null,
     });
 
     await post.save();
@@ -277,9 +281,12 @@ export const createPost = async (req, res) => {
       );
     }
 
+    // Update User post count
+    await User.findByIdAndUpdate(req.user._id, { $inc: { postsCount: 1 } });
+
     res.status(201).json({
       success: true,
-      message: req.user.isAdmin
+      message: req.user.role === 'admin'
         ? "Post created successfully"
         : "Post submitted for review",
       post,
@@ -332,7 +339,7 @@ export const updatePost = async (req, res) => {
     if (updates.title && updates.title !== post.title) {
       updates.slug = updates.title
         .toLowerCase()
-        .replace(/[^\w\s]/g, "")
+        .replace(/[^\w\s-]/g, "")
         .replace(/\s+/g, "-")
         .trim();
     }
@@ -385,6 +392,9 @@ export const deletePost = async (req, res) => {
         { $inc: { postCount: -1 } }
       );
     }
+
+     // Decrease User post count
+     await User.findByIdAndUpdate(post.author, { $inc: { postsCount: -1 } });
 
     await Post.findByIdAndDelete(id);
 
@@ -477,7 +487,7 @@ export const getAdminPosts = async (req, res) => {
 
     const [posts, total] = await Promise.all([
       Post.find()
-        .populate("author", "name email")
+        .populate("author", "name email profileImage")
         .populate("categories", "title slug")
         .sort({ createdAt: -1 })
         .skip(skip)

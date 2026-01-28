@@ -142,7 +142,6 @@ postSchema.pre("save", function () {
 //
 // 🔹 INDEXES
 //
-postSchema.index({ slug: 1 }, { unique: true });
 postSchema.index({ status: 1, publishedAt: -1 });
 postSchema.index({ author: 1 });
 postSchema.index({ categories: 1 });
