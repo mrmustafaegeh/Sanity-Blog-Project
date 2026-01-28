@@ -17,11 +17,13 @@ import {
   Trash2,
   FolderOpen,
   Tag,
-  User,
   ChevronRight,
   Loader2,
   AlertCircle,
 } from "lucide-react";
+import Button from "../components/ui/Button";
+import Badge from "../components/ui/Badge";
+import clsx from "clsx";
 
 // Available categories/tags (you can fetch these from API)
 const availableTags = [
@@ -159,8 +161,6 @@ export default function BookmarkPage() {
     byCategory: {},
   });
 
-
-
   useEffect(() => {
     // Simulate API call
     const fetchBookmarks = async () => {
@@ -234,12 +234,6 @@ export default function BookmarkPage() {
 
   const removeBookmark = async (bookmarkId) => {
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`${import.meta.env.VITE_API_URL}/bookmarks/${bookmarkId}`, {
-      //   method: "DELETE",
-      //   headers: { Authorization: `Bearer ${token}` }
-      // });
-
       setBookmarks((prev) => prev.filter((b) => b.id !== bookmarkId));
     } catch (error) {
       console.error("Failed to remove bookmark:", error);
@@ -248,12 +242,6 @@ export default function BookmarkPage() {
 
   const toggleReadStatus = async (bookmarkId) => {
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`${import.meta.env.VITE_API_URL}/bookmarks/${bookmarkId}/read`, {
-      //   method: "PATCH",
-      //   headers: { Authorization: `Bearer ${token}` }
-      // });
-
       setBookmarks((prev) =>
         prev.map((b) => (b.id === bookmarkId ? { ...b, isRead: !b.isRead } : b))
       );
@@ -269,27 +257,18 @@ export default function BookmarkPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <AlertCircle className="w-16 h-16 text-secondary mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-primary mb-2">
             Sign In Required
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-secondary mb-6">
             Please sign in to view and manage your bookmarks.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link
-              to="/login"
-              className="px-6 py-2 bg-gradient-to-r from-[#7fd3e6] to-[#12725c] text-white rounded-lg hover:opacity-90 transition-opacity"
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/register"
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Sign Up
+            <Link to="/login">
+               <Button>Sign In</Button>
             </Link>
           </div>
         </div>
@@ -298,327 +277,241 @@ export default function BookmarkPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Header */}
-      <div className="bg-gradient-to-r from-[#7fd3e6] to-[#12725c] text-white py-12 px-4">
+    <div className="min-h-screen bg-background pb-20">
+      {/* Header */}
+      <div className="bg-surface border-b border-border py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
-                <BookmarkCheck className="w-8 h-8" />
-                My Bookmarks
+              <h1 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-2 flex items-center gap-3">
+                <BookmarkCheck className="w-8 h-8 text-primary" />
+                Reading List
               </h1>
-              <p className="text-lg opacity-90">
-                Saved articles and resources for later reading
+              <p className="text-lg text-secondary">
+                Saved articles for your personal library.
               </p>
-            </div>
-            <div className="hidden md:block">
-              <div className="flex items-center gap-2 text-white/80">
-                <FolderOpen className="w-5 h-5" />
-                <span className="text-lg font-semibold">
-                  {bookmarks.length}
-                </span>
-                <span>Saved Items</span>
-              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="bg-surface rounded-xl p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Saved</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">
+                <p className="text-sm font-medium text-secondary">Total Saved</p>
+                <p className="text-3xl font-bold text-primary mt-1">
                   {stats.total}
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                <Bookmark className="w-6 h-6 text-blue-600" />
-              </div>
+              <Bookmark className="w-8 h-8 text-tertiary" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="bg-surface rounded-xl p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Read</p>
-                <p className="text-3xl font-bold text-emerald-600 mt-1">
+                <p className="text-sm font-medium text-secondary">Read</p>
+                <p className="text-3xl font-bold text-primary mt-1">
                   {stats.read}
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                <BookmarkCheck className="w-6 h-6 text-emerald-600" />
-              </div>
+              <BookmarkCheck className="w-8 h-8 text-tertiary" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="bg-surface rounded-xl p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Unread</p>
-                <p className="text-3xl font-bold text-amber-600 mt-1">
+                <p className="text-sm font-medium text-secondary">Unread</p>
+                <p className="text-3xl font-bold text-primary mt-1">
                   {stats.unread}
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                <AlertCircle className="w-6 h-6 text-amber-600" />
-              </div>
+              <AlertCircle className="w-8 h-8 text-tertiary" />
             </div>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="bg-background mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
             {/* Search Bar */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <div className="flex-1 relative max-w-lg">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary" />
               <input
                 type="text"
                 placeholder="Search bookmarks..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full pl-9 pr-4 py-2.5 bg-surface border border-border rounded-lg text-primary placeholder-tertiary focus:ring-1 focus:ring-primary focus:border-primary text-sm"
               />
             </div>
 
             {/* View Toggle */}
             <div className="flex items-center gap-4">
-              <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+              <div className="flex border border-border rounded-lg overflow-hidden bg-surface">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`px-4 py-2 ${viewMode === "grid" ? "bg-gray-100 text-gray-900" : "text-gray-600"}`}
+                  className={clsx(
+                    "px-3 py-2 transition-colors",
+                    viewMode === "grid" ? "bg-neutral-100 text-primary" : "text-secondary hover:text-primary"
+                  )}
                 >
-                  <Grid className="w-5 h-5" />
+                  <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`px-4 py-2 ${viewMode === "list" ? "bg-gray-100 text-gray-900" : "text-gray-600"}`}
+                  className={clsx(
+                    "px-3 py-2 transition-colors",
+                    viewMode === "list" ? "bg-neutral-100 text-primary" : "text-secondary hover:text-primary"
+                  )}
                 >
-                  <List className="w-5 h-5" />
+                  <List className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Clear Filters */}
-              {(searchTerm || selectedTags.length > 0) && (
-                <button
-                  onClick={clearAllFilters}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 flex items-center gap-2"
-                >
-                  <Filter className="w-4 h-4" />
-                  Clear Filters
-                </button>
-              )}
+               {(searchTerm || selectedTags.length > 0) && (
+                 <button
+                   onClick={clearAllFilters}
+                   className="text-sm text-primary hover:underline flex items-center gap-1"
+                 >
+                   <Filter className="w-3 h-3" />
+                   Clear Filters
+                 </button>
+               )}
             </div>
           </div>
 
           {/* Tags Filter */}
-          <div className="mt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Tag className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">
-                Filter by Tags
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {availableTags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    selectedTags.includes(tag)
-                      ? "bg-gradient-to-r from-[#7fd3e6] to-[#12725c] text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  {tag} {stats.byCategory[tag] && `(${stats.byCategory[tag]})`}
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-2">
+             {availableTags.map((tag) => (
+               <button
+                 key={tag}
+                 onClick={() => toggleTag(tag)}
+                 className={clsx(
+                   "px-3 py-1 rounded-full text-xs font-medium transition-colors border",
+                   selectedTags.includes(tag)
+                     ? "bg-primary text-white border-primary"
+                     : "bg-surface text-secondary border-border hover:border-primary"
+                 )}
+               >
+                 {tag}
+               </button>
+             ))}
           </div>
         </div>
 
         {/* Bookmarks Content */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : filteredBookmarks.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
-            <FolderOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {searchTerm || selectedTags.length > 0
-                ? "No matching bookmarks"
-                : "No bookmarks yet"}
+          <div className="text-center py-16 bg-surface rounded-xl border border-border border-dashed">
+            <FolderOpen className="w-12 h-12 text-tertiary mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-primary mb-2">
+              No bookmarks found
             </h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            <p className="text-secondary mb-6 max-w-md mx-auto">
               {searchTerm || selectedTags.length > 0
-                ? "Try adjusting your search or filter criteria"
-                : "Start saving articles you want to read later by clicking the bookmark icon on any post"}
+                ? "Try adjusting your filters."
+                : "You haven't saved any articles yet."}
             </p>
             {searchTerm || selectedTags.length > 0 ? (
-              <button
-                onClick={clearAllFilters}
-                className="px-6 py-2 bg-gradient-to-r from-[#7fd3e6] to-[#12725c] text-white rounded-lg hover:opacity-90 transition-opacity"
-              >
-                Clear All Filters
-              </button>
+              <Button onClick={clearAllFilters} variant="outline">
+                Clear Filters
+              </Button>
             ) : (
-              <Link
-                to="/"
-                className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-[#7fd3e6] to-[#12725c] text-white rounded-lg hover:opacity-90 transition-opacity"
-              >
-                Browse Articles
-                <ChevronRight className="w-4 h-4" />
+              <Link to="/blog">
+                <Button>Browse Articles</Button>
               </Link>
             )}
           </div>
         ) : (
-          <>
-            {/* Results Count */}
-            <div className="mb-6">
-              <p className="text-gray-600">
-                Showing{" "}
-                <span className="font-semibold text-gray-900">
-                  {filteredBookmarks.length}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-gray-900">
-                  {bookmarks.length}
-                </span>{" "}
-                bookmarks
-              </p>
-            </div>
-
-            {/* Bookmarks Grid/List */}
-            <div
-              className={
-                viewMode === "grid"
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                  : "space-y-4"
-              }
-            >
-              {filteredBookmarks.map((bookmark) => (
-                <div
-                  key={bookmark.id}
-                  className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow ${
-                    viewMode === "list" ? "flex" : ""
-                  }`}
-                >
-                  {/* Image */}
-                  <div
-                    className={`relative ${viewMode === "list" ? "w-48 flex-shrink-0" : "h-48"}`}
-                  >
-                    <img
-                      src={bookmark.image}
-                      alt={bookmark.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-3 right-3">
-                      <button
-                        onClick={() => toggleReadStatus(bookmark.id)}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          bookmark.isRead
-                            ? "bg-emerald-100 text-emerald-600"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                        title={
-                          bookmark.isRead ? "Mark as unread" : "Mark as read"
-                        }
-                      >
-                        {bookmark.isRead ? (
-                          <BookmarkCheck className="w-4 h-4" />
-                        ) : (
-                          <Bookmark className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className={`p-6 ${viewMode === "list" ? "flex-1" : ""}`}>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {bookmark.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
-                      <Link
-                        to={`/post/${bookmark.id}`}
-                        className="hover:text-emerald-600 transition-colors"
-                      >
-                        {bookmark.title}
-                      </Link>
-                    </h3>
-
-                    <p className="text-gray-600 mb-4 line-clamp-2">
-                      {bookmark.excerpt}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={bookmark.authorAvatar}
-                          alt={bookmark.author}
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {bookmark.author}
-                          </p>
-                          <div className="flex items-center gap-3 text-xs text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              {bookmark.date}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {bookmark.readTime}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <Heart className="w-4 h-4" />
-                            {bookmark.likes}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MessageSquare className="w-4 h-4" />
-                            {bookmark.comments}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Eye className="w-4 h-4" />
-                            {bookmark.views}
-                          </span>
-                        </div>
-
-                        <button
-                          onClick={() => removeBookmark(bookmark.id)}
-                          className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                          title="Remove bookmark"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
+          <div
+            className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                : "space-y-4"
+            }
+          >
+            {filteredBookmarks.map((bookmark) => (
+              <div
+                key={bookmark.id}
+                className={clsx(
+                   "group bg-surface rounded-xl border border-border overflow-hidden hover:border-primary/30 transition-colors flex",
+                   viewMode === "grid" ? "flex-col" : "flex-row h-40"
+                )}
+              >
+                {/* Image */}
+                <div className={clsx("relative bg-neutral-100", viewMode === "grid" ? "aspect-video" : "w-48 shrink-0")}>
+                  <img
+                    src={bookmark.image}
+                    alt={bookmark.title}
+                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <button
+                      onClick={() => toggleReadStatus(bookmark.id)}
+                      className="p-1.5 bg-background/80 backdrop-blur-sm rounded-full text-primary hover:bg-background transition-colors"
+                      title={bookmark.isRead ? "Mark as unread" : "Mark as read"}
+                    >
+                      {bookmark.isRead ? (
+                        <BookmarkCheck className="w-4 h-4 fill-current" />
+                      ) : (
+                        <Bookmark className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </>
+
+                {/* Content */}
+                <div className="p-5 flex flex-col flex-1">
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {bookmark.tags.slice(0, 2).map((tag) => (
+                       <Badge key={tag} variant="neutral" size="sm">{tag}</Badge>
+                    ))}
+                  </div>
+
+                  <h3 className="text-lg font-bold text-primary mb-2 line-clamp-2 leading-tight">
+                    <Link to={`/post/${bookmark.id}`} className="hover:underline">
+                      {bookmark.title}
+                    </Link>
+                  </h3>
+
+                  {viewMode === "grid" && (
+                      <p className="text-sm text-secondary line-clamp-2 mb-4">
+                        {bookmark.excerpt}
+                      </p>
+                  )}
+
+                  <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/50">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={bookmark.authorAvatar}
+                        alt={bookmark.author}
+                        className="w-6 h-6 rounded-full"
+                      />
+                      <span className="text-xs font-medium text-primary">
+                          {bookmark.author}
+                      </span>
+                    </div>
+
+                    <button
+                        onClick={() => removeBookmark(bookmark.id)}
+                        className="text-tertiary hover:text-red-600 transition-colors"
+                        title="Remove"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

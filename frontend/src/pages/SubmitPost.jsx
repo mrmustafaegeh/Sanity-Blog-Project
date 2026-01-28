@@ -6,6 +6,9 @@ import { useSubmitPostMutation } from "../api/submissionsAPI";
 import RichTextEditor from "../components/editor/RichTextEditor";
 import CategorySelect from "../components/editor/CategorySelect";
 import { toast } from "react-toastify";
+import Button from "../components/ui/Button";
+import clsx from "clsx";
+import { AlertCircle, FileText } from "lucide-react";
 
 export default function SubmitPost() {
   const navigate = useNavigate();
@@ -134,22 +137,22 @@ export default function SubmitPost() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+    <div className="min-h-screen bg-background py-16">
+      <div className="max-w-4xl mx-auto px-6">
+        <div className="mb-10">
+          <h1 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-3">
             Submit a Post
           </h1>
-          <p className="text-gray-600">
-            Your post will be reviewed by our admin team before publishing.
+          <p className="text-secondary text-lg">
+            Share your knowledge. Your post will be reviewed by our admin team before publishing.
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-surface rounded-xl border border-border p-8 shadow-sm">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Title *
               </label>
               <input
@@ -157,19 +160,20 @@ export default function SubmitPost() {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#7fd3e6] focus:border-transparent ${
-                  errors.title ? "border-red-300" : "border-gray-300"
-                }`}
+                className={clsx(
+                   "w-full px-4 py-3 bg-neutral-50 border rounded-lg focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-tertiary",
+                   errors.title ? "border-destructive focus:ring-destructive" : "border-border"
+                )}
                 placeholder="Enter a compelling title (min 10 characters)"
               />
               {errors.title && (
-                <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.title}</p>
               )}
             </div>
 
             {/* Excerpt */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Excerpt (Optional)
               </label>
               <textarea
@@ -177,61 +181,65 @@ export default function SubmitPost() {
                 value={formData.excerpt}
                 onChange={handleChange}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7fd3e6] focus:border-transparent"
+                className="w-full px-4 py-3 bg-neutral-50 border border-border rounded-lg focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-tertiary"
                 placeholder="Brief summary of your post"
                 maxLength={200}
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-secondary text-right">
                 {formData.excerpt.length}/200 characters
               </p>
             </div>
 
             {/* Content Editor */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Content *
               </label>
-              <RichTextEditor
-                value={content}
-                onChange={setContent}
-                placeholder="Write your post here... (min 100 characters)"
-              />
+              <div className="prose-editor-container border border-border rounded-lg overflow-hidden bg-neutral-50 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-all">
+                  <RichTextEditor
+                    value={content}
+                    onChange={setContent}
+                    placeholder="Write your post here... (min 100 characters)"
+                  />
+              </div>
               {errors.content && (
-                <p className="mt-1 text-sm text-red-600">{errors.content}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.content}</p>
               )}
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-secondary text-right">
                 {content.length} characters (minimum 100 required)
               </p>
             </div>
 
-            {/* Categories */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Categories
-              </label>
-              <CategorySelect
-                selected={formData.categories}
-                onChange={handleCategoryChange}
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Categories */}
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    Categories
+                  </label>
+                  <CategorySelect
+                    selected={formData.categories}
+                    onChange={handleCategoryChange}
+                  />
+                </div>
 
-            {/* Tags */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tags (comma separated)
-              </label>
-              <input
-                type="text"
-                value={formData.tags.join(", ")}
-                onChange={handleTagsChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7fd3e6] focus:border-transparent"
-                placeholder="javascript, webdev, tutorial"
-              />
+                {/* Tags */}
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    Tags (comma separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tags.join(", ")}
+                    onChange={handleTagsChange}
+                    className="w-full px-4 py-2.5 bg-neutral-50 border border-border rounded-lg focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-tertiary"
+                    placeholder="javascript, webdev, tutorial"
+                  />
+                </div>
             </div>
 
             {/* Featured Image */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Featured Image URL (Optional)
               </label>
               <input
@@ -239,41 +247,41 @@ export default function SubmitPost() {
                 name="featuredImage"
                 value={formData.featuredImage}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7fd3e6] focus:border-transparent"
+                className="w-full px-4 py-3 bg-neutral-50 border border-border rounded-lg focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-tertiary"
                 placeholder="https://example.com/image.jpg"
               />
             </div>
 
             {/* Guidelines */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-blue-800 mb-2">
-                Submission Guidelines:
+            <div className="bg-neutral-50 border border-border rounded-lg p-5">
+              <h3 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Submission Guidelines
               </h3>
-              <ul className="text-xs text-blue-700 space-y-1">
-                <li>• Posts should be original and not plagiarized</li>
-                <li>• Title must be at least 10 characters</li>
-                <li>• Content must be at least 100 characters</li>
-                <li>• No hate speech or inappropriate content</li>
-                <li>• Review may take 24-48 hours</li>
+              <ul className="text-sm text-secondary space-y-1.5 list-disc list-inside">
+                <li>Posts should be original and not plagiarized</li>
+                <li>Title must be at least 10 characters</li>
+                <li>Content must be at least 100 characters</li>
+                <li>No hate speech or inappropriate content</li>
+                <li>Review may take 24-48 hours</li>
               </ul>
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end space-x-4">
-              <button
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => navigate(-1)}
-                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={isLoading}
-                className="px-6 py-3 bg-[#7fd3e6] text-white rounded-lg font-medium hover:bg-[#5bb9d0] disabled:opacity-50"
               >
                 {isLoading ? "Submitting..." : "Submit for Review"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

@@ -1,11 +1,10 @@
 // frontend/src/pages/CategoryPostsPage.jsx
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import {
-  useGetCategoryBySlugQuery,
-} from "../api/postsAPI";
-import { ArrowLeft, FolderOpen, Sparkles, Zap } from "lucide-react";
-import PostCard from "../features/posts/components/PostCard";
+import { useGetCategoryBySlugQuery } from "../api/postsAPI";
+import { ArrowLeft, FolderOpen, Zap } from "lucide-react";
+import PostCard from "../components/blog/PostCard";
+import Button from "../components/ui/Button";
 
 export default function CategoryPostsPage() {
   const { slug } = useParams();
@@ -24,28 +23,21 @@ export default function CategoryPostsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4" />
-          <p className="text-gray-400 font-medium">Gathering space dust...</p>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-slate-800/50 backdrop-blur-xl p-10 rounded-3xl border border-white/10 max-w-md">
-          <div className="text-5xl mb-4">🛸</div>
-          <h2 className="text-2xl font-bold text-white mb-2">Transmission Lost</h2>
-          <p className="text-gray-400 mb-6">{error?.data?.message || "Failed to load category posts"}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-xl font-bold hover:shadow-lg transition-all"
-          >
-            Reconnect
-          </button>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md px-6">
+          <h2 className="text-2xl font-bold text-primary mb-2">Category Not Found</h2>
+          <p className="text-secondary mb-6">{error?.data?.message || "Failed to load category posts"}</p>
+          <Button onClick={() => window.location.reload()}>
+            Retry
+          </Button>
         </div>
       </div>
     );
@@ -53,19 +45,15 @@ export default function CategoryPostsPage() {
 
   if (!category && !isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center max-w-md p-10 rounded-3xl backdrop-blur-xl border border-white/10">
-          <FolderOpen className="w-20 h-20 text-emerald-500/20 mx-auto mb-6" />
-          <h1 className="text-3xl font-bold text-white mb-2">Unknown Sector</h1>
-          <p className="text-gray-400 mb-8">
-            The category you're navigating to doesn't exist in this galaxy.
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <FolderOpen className="w-16 h-16 text-tertiary mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-primary mb-2">Unknown Category</h1>
+          <p className="text-secondary mb-8">
+            The category you are looking for does not exist.
           </p>
-          <Link
-            to="/categories"
-            className="inline-flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all font-semibold shadow-lg shadow-emerald-200"
-          >
-            <ArrowLeft size={20} />
-            Back to Topics
+          <Link to="/categories">
+             <Button variant="primary">Back to Categories</Button>
           </Link>
         </div>
       </div>
@@ -73,64 +61,47 @@ export default function CategoryPostsPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
-        {/* Category Header */}
-        <div className="mb-16">
-          <Link
-            to="/categories"
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-white font-bold transition-all mb-8 group"
-          >
-            <div className="p-2 bg-white/5 rounded-full group-hover:bg-white/10 transition-all">
-              <ArrowLeft size={18} />
-            </div>
-            <span>All Categories</span>
-          </Link>
+    <div className="min-h-screen bg-background pb-20">
+      <div className="max-w-[1400px] mx-auto px-6 py-12 lg:py-20">
+        
+        {/* Header */}
+        <div className="mb-12">
+            <Link
+                to="/categories"
+                className="inline-flex items-center gap-2 text-sm text-secondary hover:text-primary transition-colors mb-6"
+            >
+                <ArrowLeft className="w-4 h-4" />
+                All Categories
+            </Link>
 
-          <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-3xl rounded-[3rem] p-10 lg:p-16 border border-white/10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
-              <Zap size={200} className="text-emerald-500" />
-            </div>
-            
-            <div className="flex flex-col lg:flex-row lg:items-center gap-8 relative z-10">
-              <div className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-500/20 transform -rotate-3 group-hover:rotate-0 transition-transform">
-                <Sparkles size={48} className="text-white" />
-              </div>
-              
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-emerald-500/30">
-                    Topic Exploration
-                  </span>
+            <div className="flex items-start gap-4">
+                <div className="p-3 bg-neutral-100 rounded-xl hidden md:block">
+                    <Zap className="w-8 h-8 text-primary" />
                 </div>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tight">
-                  {category?.title}
-                </h1>
-                <p className="text-slate-400 text-xl max-w-2xl leading-relaxed">
-                  {category?.description || `A curated collection of expertise and insights focused on ${category?.title}.`}
-                </p>
-              </div>
+                <div>
+                    <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-4">
+                        {category?.title}
+                    </h1>
+                    <p className="text-lg text-secondary max-w-2xl leading-relaxed">
+                        {category?.description || `Explore our collection of articles on ${category?.title}.`}
+                    </p>
+                </div>
             </div>
-          </div>
         </div>
+
+        <div className="border-t border-border mb-12"></div>
 
         {/* Posts Rendering */}
         {posts.length === 0 ? (
-          <div className="bg-slate-800/40 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-20 text-center shadow-xl">
-            <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FolderOpen size={40} className="text-emerald-500/40" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-3">
-              No articles in this sector yet
+          <div className="text-center py-20 bg-neutral-50 rounded-xl border border-border border-dashed">
+            <h3 className="text-xl font-bold text-primary mb-2">
+              No articles yet
             </h3>
-            <p className="text-slate-400 text-lg mb-8 max-w-sm mx-auto">
-              This category is currently empty. Check back soon for new insights.
+            <p className="text-secondary mb-6">
+              Check back soon for new insights in this category.
             </p>
-            <Link
-              to="/blog"
-              className="inline-flex items-center gap-2 px-10 py-5 bg-emerald-600 text-white font-black rounded-full hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-500/20 hover:scale-105 active:scale-95"
-            >
-              Explore Other Articles
+            <Link to="/blog">
+              <Button variant="outline">Browse All Articles</Button>
             </Link>
           </div>
         ) : (
@@ -141,26 +112,26 @@ export default function CategoryPostsPage() {
               ))}
             </div>
 
-            {/* Pagination Grid-style */}
+            {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center flex-wrap gap-3">
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <button
-                    key={i + 1}
-                    onClick={() => {
-                        setPage(i + 1);
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                    }}
-                    className={`w-14 h-14 flex items-center justify-center rounded-2xl font-black transition-all ${
-                      page === i + 1
-                        ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-xl shadow-emerald-500/20 scale-110"
-                        : "bg-slate-800/50 text-slate-400 border border-white/10 hover:bg-white/5"
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
+                <div className="flex justify-center items-center gap-2">
+                    {Array.from({ length: totalPages }, (_, i) => (
+                        <button
+                            key={i + 1}
+                            onClick={() => {
+                                setPage(i + 1);
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                            }}
+                            className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${
+                                page === i + 1
+                                    ? "bg-primary text-white"
+                                    : "bg-transparent text-secondary hover:bg-neutral-100"
+                            }`}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+                </div>
             )}
           </>
         )}

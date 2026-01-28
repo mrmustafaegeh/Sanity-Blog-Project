@@ -12,13 +12,10 @@ import { useToggleLikeMutation } from "../api/likesAPI";
 import { useToggleBookmarkMutation } from "../api/usersAPI";
 import {
   ArrowLeft,
-  Calendar,
   Clock,
-  User,
   Heart,
   Share2,
   Bookmark,
-  Eye,
   Sparkles,
   Twitter,
   Facebook,
@@ -30,11 +27,11 @@ import {
 import CommentSection from "../components/blog/CommentSection";
 import AuthorBio from "../components/blog/AuthorBio";
 import SanityImage from "../components/ui/SanityImage";
-import { useScrollReveal } from "../hooks/useScrollReveal";
+import Button from "../components/ui/Button";
+import Badge from "../components/ui/Badge";
+import clsx from "clsx";
 
 export default function SinglePostPage() {
-  const contentRef = useScrollReveal({ delay: 100 }, "left");
-  const sidebarRef = useScrollReveal({ delay: 200 }, "right");
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -93,7 +90,7 @@ export default function SinglePostPage() {
         setDisplayedSummary(
           currentSummary.slice(0, displayedSummary.length + 1)
         );
-      }, 20);
+      }, 10);
       return () => clearTimeout(timeout);
     } else {
       setIsTyping(false);
@@ -190,27 +187,27 @@ export default function SinglePostPage() {
   const ptComponents = {
     block: {
       h2: ({ children }) => (
-        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mt-12 mb-6">
+        <h2 className="text-3xl font-serif font-bold text-primary mt-12 mb-6 tracking-tight">
           {children}
         </h2>
       ),
       h3: ({ children }) => (
-        <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-10 mb-5">
+        <h3 className="text-2xl font-serif font-bold text-primary mt-10 mb-5 tracking-tight">
           {children}
         </h3>
       ),
       h4: ({ children }) => (
-        <h4 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mt-8 mb-4">
+        <h4 className="text-xl font-semibold text-primary mt-8 mb-4">
           {children}
         </h4>
       ),
       blockquote: ({ children }) => (
-        <blockquote className="border-l-4 border-emerald-500 dark:border-emerald-400 pl-6 my-8 italic text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 py-4 rounded-r-lg">
+        <blockquote className="border-l-4 border-primary pl-6 my-8 italic text-secondary bg-background py-2">
           {children}
         </blockquote>
       ),
       normal: ({ children }) => (
-        <p className="text-lg leading-relaxed text-slate-700 dark:text-slate-300 mb-6">
+        <p className="text-lg leading-relaxed text-secondary mb-6 font-sans">
           {children}
         </p>
       ),
@@ -225,68 +222,52 @@ export default function SinglePostPage() {
             href={value.href}
             rel={rel}
             target={value.href.startsWith("/") ? "_self" : "_blank"}
-            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 underline decoration-emerald-300 dark:decoration-emerald-600 underline-offset-2"
+            className="text-primary hover:text-secondary underline decoration-1 underline-offset-2 transition-colors"
           >
             {children}
           </a>
         );
       },
       strong: ({ children }) => (
-        <strong className="font-bold text-slate-900 dark:text-white">
+        <strong className="font-bold text-primary">
           {children}
         </strong>
       ),
     },
     list: {
       bullet: ({ children }) => (
-        <ul className="list-disc list-inside space-y-2 my-6 text-slate-700 dark:text-slate-300">
+        <ul className="list-disc list-inside space-y-2 my-6 text-secondary marker:text-primary">
           {children}
         </ul>
       ),
       number: ({ children }) => (
-        <ol className="list-decimal list-inside space-y-2 my-6 text-slate-700 dark:text-slate-300">
+        <ol className="list-decimal list-inside space-y-2 my-6 text-secondary marker:text-primary font-medium">
           {children}
         </ol>
       ),
-    },
-    listItem: {
-      bullet: ({ children }) => <li className="leading-relaxed">{children}</li>,
-      number: ({ children }) => <li className="leading-relaxed">{children}</li>,
     },
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-emerald-600 dark:text-emerald-400 mx-auto mb-4" />
-          <p className="text-slate-600 dark:text-slate-400 text-lg">
-            Loading amazing content...
-          </p>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (isError || !post) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="text-6xl mb-6">😔</div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-            Post Not Found
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 mb-8">
-            The article you're looking for seems to have vanished into thin air.
-          </p>
-          <Link
-            to="/blog"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white rounded-xl font-semibold transition-all"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Blog
-          </Link>
-        </div>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 text-center">
+        <h1 className="text-3xl font-serif font-bold text-primary mb-4">
+          Post Not Found
+        </h1>
+        <p className="text-secondary mb-8">
+          The article you are looking for does not exist or has been removed.
+        </p>
+        <Link to="/blog">
+          <Button>Back to Blog</Button>
+        </Link>
       </div>
     );
   }
@@ -299,360 +280,205 @@ export default function SinglePostPage() {
   const viewsCount = post.views || post.viewCount || 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-background pb-20">
       {/* Scroll Progress */}
-      <div className="fixed top-0 left-0 w-full h-1 bg-slate-200 dark:bg-slate-800 z-50">
+      <div className="fixed top-0 left-0 w-full h-1 bg-border z-50">
         <div
           id="scroll-progress"
-          className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 dark:from-emerald-400 dark:to-teal-400 transition-all duration-150"
+          className="h-full bg-primary transition-all duration-150"
           style={{ width: "0%" }}
         />
       </div>
 
-      {/* Hero Section */}
-      <div className="relative h-[70vh] min-h-[500px] overflow-hidden">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0">
-          <SanityImage
-            image={post.mainImage}
-            alt={post.title}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 via-slate-900/50 to-slate-900/90 dark:from-black/80 dark:via-black/60 dark:to-black/95" />
-        </div>
-
-        {/* Navigation */}
-        <div className="relative z-10 container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <Link
+      <div className="container mx-auto px-4 max-w-[1000px] pt-12 md:pt-20">
+        
+        {/* Breadcrumb & Navigation */}
+        <div className="flex items-center justify-between mb-8 md:mb-12">
+           <Link
               to="/blog"
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-full text-white hover:bg-white/20 dark:hover:bg-white/10 transition-all"
+              className="flex items-center gap-2 text-secondary hover:text-primary transition-colors text-sm font-medium"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="font-medium">Back</span>
+              Back to Articles
             </Link>
 
-            <button
-              onClick={handleBookmark}
-              disabled={bookmarking}
-              className="p-3 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-full text-white hover:bg-white/20 dark:hover:bg-white/10 transition-all"
-            >
-              {isBookmarked ? (
-                <BookmarkCheck className="w-5 h-5" />
-              ) : (
-                <Bookmark className="w-5 h-5" />
-              )}
-            </button>
-          </div>
+            <div className="flex gap-2">
+                 <button
+                    onClick={handleBookmark}
+                    disabled={bookmarking}
+                    className={clsx(
+                        "p-2 rounded-full transition-colors",
+                        isBookmarked ? "text-primary bg-primary/5" : "text-secondary hover:bg-neutral-100"
+                    )}
+                 >
+                    {isBookmarked ? <BookmarkCheck className="w-5 h-5"/> : <Bookmark className="w-5 h-5"/>}
+                 </button>
+                 <div className="relative">
+                    <button
+                        onClick={() => setShowShareMenu(!showShareMenu)}
+                        className="p-2 text-secondary hover:bg-neutral-100 rounded-full transition-colors"
+                    >
+                        <Share2 className="w-5 h-5" />
+                    </button>
+                    {showShareMenu && (
+                        <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border rounded-lg shadow-lg py-1 z-20">
+                             {[
+                                { id: 'twitter', icon: Twitter, label: 'Twitter' },
+                                { id: 'facebook', icon: Facebook, label: 'Facebook' },
+                                { id: 'linkedin', icon: Linkedin, label: 'LinkedIn' },
+                             ].map(item => (
+                                 <button
+                                    key={item.id}
+                                    onClick={() => share(item.id)}
+                                    className="w-full flex items-center gap-3 px-4 py-2 hover:bg-neutral-50 text-left text-primary text-sm"
+                                 >
+                                    <item.icon className="w-4 h-4" />
+                                    {item.label}
+                                 </button>
+                             ))}
+                             <div className="border-t border-border my-1"></div>
+                             <button
+                                onClick={copyLink}
+                                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-neutral-50 text-left text-primary text-sm"
+                             >
+                                <Copy className="w-4 h-4" />
+                                Copy Link
+                             </button>
+                        </div>
+                    )}
+                 </div>
+            </div>
         </div>
 
-        {/* Hero Content */}
-        <div className="relative z-10 container mx-auto px-4 h-full flex items-end pb-16">
-          <div className="max-w-4xl">
-            {/* Categories */}
-            <div className="flex flex-wrap gap-2 mb-6">
+        {/* Header Content */}
+        <div className="mb-10 text-center md:text-left">
+           <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
               {post.categories?.map((cat, i) => (
-                <span
-                  key={i}
-                  className="px-4 py-1.5 bg-emerald-500/20 dark:bg-emerald-400/20 backdrop-blur-sm border border-emerald-400/30 dark:border-emerald-300/30 text-emerald-100 dark:text-emerald-300 rounded-full text-sm font-medium"
-                >
-                  {cat.title || cat}
-                </span>
+                <Badge key={i} variant="neutral">
+                   {cat.title || cat}
+                </Badge>
               ))}
             </div>
-
-            {/* Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+            
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-primary mb-6 leading-tight tracking-tight">
               {post.title}
             </h1>
 
-            {/* Meta Info */}
-            <div className="flex flex-wrap items-center gap-6 text-white/90 dark:text-white/80">
-              <div className="flex items-center gap-2">
-                <User className="w-5 h-5" />
-                <span className="font-medium">
-                  {post.author?.name || "Anonymous"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                <span>
-                  {new Date(
-                    post.publishedAt || post.createdAt
-                  ).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                <span>{readingTime} min read</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Eye className="w-5 h-5" />
-                <span>{viewsCount.toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
+             <div className="flex flex-wrap items-center justify-center md:justify-start gap-6 text-secondary text-sm md:text-base">
+                 <div className="flex items-center gap-2">
+                     {post.author?.image?.url ?
+                        <img src={post.author.image.url} alt={post.author.name} className="w-8 h-8 rounded-full border border-border" /> :
+                        <div className="w-8 h-8 rounded-full bg-neutral-200" />
+                     }
+                     <span className="font-medium text-primary">{post.author?.name || "Author"}</span>
+                 </div>
+                 <span className="w-1 h-1 rounded-full bg-tertiary"></span>
+                 <time dateTime={post.publishedAt || post.createdAt}>
+                    {new Date(post.publishedAt || post.createdAt).toLocaleDateString("en-US", {
+                         month: "short", day: "numeric", year: "numeric"
+                    })}
+                 </time>
+                  <span className="w-1 h-1 rounded-full bg-tertiary"></span>
+                 <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {readingTime} min read
+                 </div>
+             </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-16">
+        {/* Main Image */}
+        <div className="mb-16 rounded-xl overflow-hidden border border-border bg-neutral-100 aspect-video relative">
+            <SanityImage
+                 image={post.mainImage}
+                 alt={post.title}
+                 className="w-full h-full object-cover"
+            />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Article Content */}
-          <div ref={contentRef} className="lg:col-span-8">
-            {/* AI Summary Section */}
-            {(post.aiSummary || generatedSummary) && (
-              <div className="mb-12 p-8 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="p-3 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl">
-                    <Sparkles className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                      AI-Generated Summary
-                    </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      Quick overview powered by artificial intelligence
-                    </p>
-                  </div>
-                </div>
+            {/* Sidebar (Left on Desktop) */}
+            <aside className="lg:col-span-3 lg:order-last space-y-8">
+                 <div className="sticky top-24">
+                     <div className="border border-border p-6 rounded-xl bg-surface mb-8">
+                        <h3 className="font-bold text-primary mb-4">Article Stats</h3>
+                        <div className="space-y-4 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-secondary">Views</span>
+                                <span className="font-medium text-primary">{viewsCount.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-secondary">Likes</span>
+                                <span className="font-medium text-primary">{likesCount}</span>
+                            </div>
+                        </div>
+                     </div>
+                     
+                     {/* Like Button (Floating Action) */}
+                     <div className="flex flex-col gap-4">
+                        <Button 
+                            variant={isLiked ? "primary" : "outline"}
+                            className="w-full justify-center gap-2"
+                            onClick={handleLike}
+                        >
+                            <Heart className={clsx("w-4 h-4", isLiked && "fill-current")} />
+                            {isLiked ? "Liked" : "Like this post"}
+                        </Button>
+                     </div>
+                 </div>
+            </aside>
 
-                {!showSummary ? (
-                  <button
-                    onClick={() => setShowSummary(true)}
-                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
-                  >
-                    <Sparkles className="w-5 h-5" />
-                    View AI Summary
-                  </button>
-                ) : (
-                  <div className="space-y-4">
-                    <p className="text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-                      {displayedSummary}
-                      {isTyping && (
-                        <span className="inline-block w-1 h-5 bg-emerald-600 dark:bg-emerald-400 ml-1 animate-pulse" />
+            {/* Content */}
+            <div className="lg:col-span-9">
+                 {/* AI Summary */}
+                 {(post.aiSummary || generatedSummary) && (
+                     <div className="mb-12 p-6 bg-neutral-50 border border-border rounded-xl">
+                        <div className="flex items-center gap-2 mb-4">
+                             <Sparkles className="w-5 h-5 text-primary" />
+                             <h3 className="font-bold text-primary">AI Summary</h3>
+                        </div>
+                        
+                        {!showSummary ? (
+                            <Button variant="secondary" onClick={() => setShowSummary(true)} className="w-full">
+                                Reveal Summary
+                            </Button>
+                        ) : (
+                             <div className="space-y-4">
+                                <p className="text-secondary leading-relaxed">
+                                    {displayedSummary}
+                                     {isTyping && <span className="inline-block w-1.5 h-4 bg-primary ml-1 animate-pulse" />}
+                                </p>
+                                <button className="text-xs text-primary underline" onClick={() => setShowSummary(false)}>
+                                    Hide
+                                </button>
+                             </div>
+                        )}
+                     </div>
+                 )}
+
+                 {/* Admin Generate AI */}
+                 {!post.aiSummary && !generatedSummary && user?.role === "admin" && (
+                     <div className="mb-8">
+                         <Button variant="outline" onClick={handleGenerateSummary} disabled={isGeneratingSummary}>
+                             {isGeneratingSummary ? "Generating..." : "Generate AI Summary"}
+                         </Button>
+                     </div>
+                 )}
+
+                 <article className="prose prose-lg prose-stone max-w-none text-secondary">
+                      {post.body && <PortableText value={post.body} components={ptComponents} />}
+                      {post.content && (
+                        <div dangerouslySetInnerHTML={{ __html: post.content }} />
                       )}
-                    </p>
-                    <button
-                      onClick={() => {
-                        setShowSummary(false);
-                        setDisplayedSummary("");
-                      }}
-                      className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium"
-                    >
-                      Hide Summary
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+                 </article>
 
-            {/* Generate Summary Button (Admin Only) */}
-            {!post.aiSummary && !generatedSummary && user?.role === "admin" && (
-              <div className="mb-12 p-8 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="p-3 bg-slate-200 dark:bg-slate-700 rounded-xl">
-                    <Sparkles className="w-6 h-6 text-slate-600 dark:text-slate-400" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                      Generate AI Summary
-                    </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                      Create an AI-powered summary for this article
-                    </p>
-                    <button
-                      onClick={handleGenerateSummary}
-                      disabled={isGeneratingSummary}
-                      className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white rounded-xl font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isGeneratingSummary ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-5 h-5" />
-                          Generate Now
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Article Body */}
-            <article className="prose prose-lg dark:prose-invert max-w-none">
-              {post.body && <PortableText value={post.body} components={ptComponents} />}
-              {post.content && (
-                <div
-                  className="text-slate-700 dark:text-slate-300"
-                  dangerouslySetInnerHTML={{ __html: post.content }}
-                />
-              )}
-            </article>
-
-            {/* Engagement Actions */}
-            <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={handleLike}
-                    disabled={liking}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
-                      isLiked
-                        ? "bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-2 border-rose-200 dark:border-rose-800"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-2 border-slate-200 dark:border-slate-700 hover:border-rose-200 dark:hover:border-rose-800"
-                    }`}
-                  >
-                    <Heart
-                      className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`}
-                    />
-                    <span>{likesCount}</span>
-                  </button>
-
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowShareMenu(!showShareMenu)}
-                      className="flex items-center gap-2 px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-2 border-slate-200 dark:border-slate-700 rounded-xl font-semibold hover:border-emerald-200 dark:hover:border-emerald-800 transition-all"
-                    >
-                      <Share2 className="w-5 h-5" />
-                      <span>Share</span>
-                    </button>
-
-                    {showShareMenu && (
-                      <div className="absolute top-full mt-2 left-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-2 min-w-[200px] z-20">
-                        <button
-                          onClick={() => share("twitter")}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors text-left"
-                        >
-                          <Twitter className="w-5 h-5 text-blue-400" />
-                          <span className="text-slate-700 dark:text-slate-300">
-                            Twitter
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => share("facebook")}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors text-left"
-                        >
-                          <Facebook className="w-5 h-5 text-blue-600" />
-                          <span className="text-slate-700 dark:text-slate-300">
-                            Facebook
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => share("linkedin")}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors text-left"
-                        >
-                          <Linkedin className="w-5 h-5 text-blue-700" />
-                          <span className="text-slate-700 dark:text-slate-300">
-                            LinkedIn
-                          </span>
-                        </button>
-                        <button
-                          onClick={copyLink}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors text-left"
-                        >
-                          <Copy className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                          <span className="text-slate-700 dark:text-slate-300">
-                            Copy Link
-                          </span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+                 <hr className="my-12 border-border" />
+                 
+                 <AuthorBio author={post.author} />
+                 
+                 <div className="mt-12">
+                    <CommentSection postId={post._id} />
+                 </div>
             </div>
-
-            {/* Author Bio */}
-            {post.author && (
-              <div className="mt-16">
-                <AuthorBio author={post.author} />
-              </div>
-            )}
-
-            {/* Comments */}
-            <div className="mt-16">
-              <CommentSection postId={post._id} />
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <aside ref={sidebarRef} className="lg:col-span-4">
-            <div className="sticky top-24 space-y-6">
-              {/* Quick Stats */}
-              <div className="p-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
-                  Article Stats
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">
-                      Views
-                    </span>
-                    <span className="font-semibold text-slate-900 dark:text-white">
-                      {viewsCount.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">
-                      Likes
-                    </span>
-                    <span className="font-semibold text-slate-900 dark:text-white">
-                      {likesCount}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">
-                      Read Time
-                    </span>
-                    <span className="font-semibold text-slate-900 dark:text-white">
-                      {readingTime} min
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Newsletter CTA */}
-              <div className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                  Never miss a beat
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                  Join our newsletter for weekly insights
-                </p>
-                <button className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white rounded-xl font-semibold transition-all">
-                  Subscribe Now
-                </button>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-
-      {/* Bottom CTA */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-700 dark:to-teal-700 py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Hungry for more?
-          </h2>
-          <p className="text-emerald-100 dark:text-emerald-200 mb-8 max-w-2xl mx-auto">
-            Explore our curated collection of articles hand-picked to help you
-            grow.
-          </p>
-          <Link
-            to="/blog"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-emerald-600 rounded-xl font-bold hover:shadow-xl transition-all"
-          >
-            Explore Blogify
-          </Link>
         </div>
       </div>
     </div>

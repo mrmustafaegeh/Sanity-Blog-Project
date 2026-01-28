@@ -1,6 +1,7 @@
-// frontend/src/components/ui/Button.jsx
 import { forwardRef } from "react";
 import { Loader2 } from "lucide-react";
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 
 const Button = forwardRef(
   (
@@ -18,33 +19,33 @@ const Button = forwardRef(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+      "inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed";
 
     const variants = {
       primary:
-        "bg-gradient-to-r from-emerald-500 to-teal-400 text-white hover:shadow-lg hover:scale-105 focus:ring-emerald-500",
+        "bg-primary text-white hover:bg-neutral-800 focus:ring-neutral-500",
       secondary:
-        "bg-white text-gray-700 border border-gray-300 hover:border-emerald-300 hover:bg-emerald-50 focus:ring-emerald-300",
+        "bg-white text-secondary border border-border hover:bg-neutral-50 hover:border-neutral-300 focus:ring-neutral-200",
       ghost:
-        "bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-300",
+        "bg-transparent text-secondary hover:bg-neutral-100 hover:text-primary focus:ring-neutral-200",
       danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+      outline: "bg-transparent border border-primary text-primary hover:bg-primary hover:text-white",
     };
 
     const sizes = {
-      small: "px-3 py-1.5 text-sm",
+      small: "px-3 py-1.5 text-xs",
       medium: "px-5 py-2.5 text-sm",
-      large: "px-6 py-3 text-base",
+      large: "px-8 py-3.5 text-base",
     };
+
+    const classes = twMerge(
+      clsx(baseStyles, variants[variant], sizes[size], className)
+    );
 
     return (
       <button
         ref={ref}
-        className={`
-        ${baseStyles}
-        ${variants[variant]}
-        ${sizes[size]}
-        ${className}
-      `}
+        className={classes}
         disabled={disabled || loading}
         {...props}
       >

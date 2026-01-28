@@ -1,100 +1,65 @@
-// frontend/src/components/blog/PostCard.jsx
 import { Link } from "react-router-dom";
-import { Calendar, User, Clock, BookOpen } from "lucide-react";
+import { format } from "date-fns";
 import { generateSrcSet, getOptimizedUrl } from "../../utils/imageOptimizer";
+import Badge from "../ui/Badge";
+import Card from "../ui/Card";
 
 export default function PostCard({ post, priority = false }) {
   const readingTime =
     post.readingTime || Math.ceil(post.body?.length / 1000) || 5;
 
-  const imageUrl = post.mainImage?.url ||
+  const imageUrl =
+    post.mainImage?.url ||
     post.mainImage?.asset?.url ||
     "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
 
   return (
     <Link
       to={`/blog/${encodeURIComponent(post.slug?.current || post.slug)}`}
-      className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-emerald-300 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+      className="group block h-full"
     >
-      {/* Image Container */}
-      <div className="relative overflow-hidden h-48">
-        <img
-          src={getOptimizedUrl(imageUrl, 600)}
-          srcSet={generateSrcSet(imageUrl, [400, 600, 800])}
-          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          alt={post.title}
-          width={542}
-          height={361}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading={priority ? "eager" : "lazy"}
-          fetchPriority={priority ? "high" : "auto"}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <Card className="h-full flex flex-col border-none shadow-none bg-transparent rounded-none p-0 overflow-visible hover:border-transparent">
+        {/* Image */}
+        <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-neutral-100 mb-4">
+          <img
+            src={getOptimizedUrl(imageUrl, 600)}
+            srcSet={generateSrcSet(imageUrl, [400, 600, 800])}
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            alt={post.title}
+            width={542}
+            height={361}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading={priority ? "eager" : "lazy"}
+            decoding="async"
+          />
+        </div>
 
-        {/* Category Badge */}
-        {post.categories?.[0] && (
-          <div className="absolute top-4 left-4">
-            <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-emerald-700 text-xs font-medium rounded-full">
-              {post.categories[0].title}
+        {/* Content */}
+        <div className="flex-1 flex flex-col">
+          <div className="flex items-center gap-2 mb-3">
+            {post.categories?.[0] && (
+              <Badge variant="neutral" size="sm">
+                {post.categories[0].title}
+              </Badge>
+            )}
+            <span className="text-xs text-secondary font-medium uppercase tracking-wide">
+              {post.publishedAt && format(new Date(post.publishedAt), "MMM d, yyyy")}
             </span>
           </div>
-        )}
-      </div>
 
-      {/* Content */}
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-1 text-xs text-gray-500">
-              <Calendar className="w-3 h-3" />
-              <time dateTime={post.publishedAt}>
-                {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}
-              </time>
-            </div>
-            <div className="flex items-center space-x-1 text-xs text-gray-500">
-              <Clock className="w-3 h-3" />
-              <span>{readingTime} min</span>
-            </div>
-          </div>
+          <h3 className="text-lg font-bold text-primary mb-2 leading-tight group-hover:text-secondary transition-colors">
+            {post.title}
+          </h3>
 
-          <div className="flex items-center space-x-1 text-xs text-gray-500">
-            <BookOpen className="w-3 h-3" />
-            <span>{Math.floor(Math.random() * 100) + 50} views</span>
+          <p className="text-secondary text-sm line-clamp-2 md:line-clamp-3 mb-4 leading-relaxed">
+            {post.excerpt || "Read more about this topic..."}
+          </p>
+          
+          <div className="mt-auto flex items-center gap-2 text-xs font-medium text-tertiary">
+             <span>{readingTime} min read</span>
           </div>
         </div>
-
-        <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition-colors line-clamp-2">
-          {post.title}
-        </h3>
-
-        <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-          {post.excerpt ||
-            "Discover insights and learnings from this article..."}
-        </p>
-
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">
-                {post.author?.name?.charAt(0) || "A"}
-              </span>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                {post.author?.name || "Anonymous"}
-              </p>
-              <p className="text-xs text-gray-500">Author</p>
-            </div>
-          </div>
-
-          <div className="text-emerald-600 text-sm font-medium group-hover:translate-x-1 transition-transform">
-            Read →
-          </div>
-        </div>
-      </div>
+      </Card>
     </Link>
   );
 }

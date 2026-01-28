@@ -1,8 +1,7 @@
 import { useLocation } from "react-router-dom";
 import Navbar from "./Header/Navbar";
-import Footer from "./Footer/Footer";
+import Footer from "./Footer/Footer"; // Assuming Footer exists
 import { Toaster } from "react-hot-toast";
-import AnimatedBackground from "../common/AnimatedBackground";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -10,7 +9,7 @@ export default function Layout({ children }) {
 
   if (isAdminPath) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
         <main>{children}</main>
         <Toaster position="top-right" />
       </div>
@@ -18,25 +17,26 @@ export default function Layout({ children }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-x-hidden">
-      <AnimatedBackground />
+    <div className="min-h-screen flex flex-col font-sans text-primary">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+      <main className="flex-grow w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         {children}
       </main>
       <Footer />
       <Toaster
         position="top-right"
         toastOptions={{
+          className: "text-sm font-medium",
           duration: 4000,
           style: {
-            background: "#363636",
+            background: "#1c1917", // darker neutral
             color: "#fff",
+            borderRadius: "6px",
           },
           success: {
             iconTheme: {
-              primary: "#10b981",
-              secondary: "#fff",
+              primary: "#fff",
+              secondary: "#1c1917",
             },
           },
         }}

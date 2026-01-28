@@ -17,21 +17,24 @@ import {
   PlusCircle,
   RefreshCw,
 } from "lucide-react";
+import Button from "../components/ui/Button";
+import Badge from "../components/ui/Badge";
+import clsx from "clsx";
 
 // Status configuration constants
 const STATUS_CONFIG = {
   approved: {
-    color: "bg-green-100 text-green-800 border-green-300",
+    variant: "success",
     icon: <Check className="w-3 h-3 mr-1" />,
     label: "Approved",
   },
   pending: {
-    color: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    variant: "warning",
     icon: <Clock className="w-3 h-3 mr-1" />,
     label: "Pending Review",
   },
   rejected: {
-    color: "bg-red-100 text-red-800 border-red-300",
+    variant: "destructive",
     icon: <X className="w-3 h-3 mr-1" />,
     label: "Rejected",
   },
@@ -39,59 +42,50 @@ const STATUS_CONFIG = {
 
 const LoadingState = () => (
   <div className="p-8 text-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-    <p className="text-gray-600">Loading your submissions...</p>
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+    <p className="text-secondary">Loading your submissions...</p>
   </div>
 );
 
 const ErrorState = ({ error, onRetry }) => (
   <div className="p-8 text-center">
-    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-    <p className="text-red-600 mb-4">
+    <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+    <p className="text-destructive mb-4">
       Error loading submissions:{" "}
       {error?.data?.message || error?.message || "Unknown error"}
     </p>
-    <button
-      onClick={onRetry}
-      className="mt-4 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 flex items-center mx-auto"
-    >
-      <RefreshCw className="w-4 h-4 mr-2" />
-      Retry
-    </button>
+    <Button onClick={onRetry} className="flex items-center mx-auto">
+       <RefreshCw className="w-4 h-4 mr-2" />
+       Retry
+    </Button>
   </div>
 );
 
 const EmptyState = ({ onNavigate }) => (
   <div className="p-12 text-center">
-    <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+    <Clock className="w-16 h-16 text-tertiary mx-auto mb-4" />
+    <h3 className="text-xl font-semibold text-primary mb-2">
       No Submissions Yet
     </h3>
-    <p className="text-gray-600 mb-6">You haven't submitted any posts yet.</p>
-    <button
-      onClick={onNavigate}
-      className="px-6 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors flex items-center mx-auto"
-    >
-      <PlusCircle className="w-5 h-5 mr-2" />
-      Submit Your First Post
-    </button>
+    <p className="text-secondary mb-6">You haven't submitted any posts yet.</p>
+    <Button onClick={onNavigate} className="flex items-center mx-auto">
+       <PlusCircle className="w-5 h-5 mr-2" />
+       Submit Your First Post
+    </Button>
   </div>
 );
 
 const AuthRequiredState = () => {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+    <div className="min-h-screen bg-background py-8 flex items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-600 mb-4">
+        <p className="text-secondary mb-4">
           Please login to view your submissions
         </p>
-        <button
-          onClick={() => navigate("/login")}
-          className="text-emerald-500 hover:underline"
-        >
-          Go to Login
-        </button>
+        <Button onClick={() => navigate("/login")} variant="outline">
+           Go to Login
+        </Button>
       </div>
     </div>
   );
@@ -100,18 +94,15 @@ const AuthRequiredState = () => {
 const UserIdMissingState = () => {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+    <div className="min-h-screen bg-background py-8 flex items-center justify-center">
       <div className="text-center">
-        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-        <p className="text-red-600 mb-4">
+        <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">
           User ID not found. Please log in again.
         </p>
-        <button
-          onClick={() => navigate("/login")}
-          className="text-emerald-500 hover:underline"
-        >
-          Go to Login
-        </button>
+        <Button onClick={() => navigate("/login")} variant="outline">
+           Go to Login
+        </Button>
       </div>
     </div>
   );
@@ -119,11 +110,6 @@ const UserIdMissingState = () => {
 
 // ✅ Extract slug from whatever shape you store it in
 const getSubmissionSlug = (submission) => {
-  // Most common shapes:
-  // - sanitySlug: "my-post"
-  // - sanitySlug: { current: "my-post" }
-  // - slug: { current: "my-post" }
-  // - slug: "my-post"
   return (
     submission?.sanitySlug?.current ||
     submission?.sanitySlug ||
@@ -135,7 +121,7 @@ const getSubmissionSlug = (submission) => {
 
 const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
   const statusConfig = STATUS_CONFIG[submission.status] || {
-    color: "bg-gray-100 text-gray-800 border-gray-300",
+    variant: "neutral",
     icon: null,
     label: submission.status,
   };
@@ -155,14 +141,14 @@ const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
   };
 
   return (
-    <tr className="hover:bg-gray-50">
+    <tr className="hover:bg-neutral-50 transition-colors border-b border-border last:border-0 text-left">
       <td className="px-6 py-4">
-        <div className="text-sm font-medium text-gray-900">
+        <div className="text-sm font-medium text-primary">
           {submission.title}
         </div>
 
         {submission.excerpt && (
-          <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+          <div className="text-xs text-secondary mt-1 line-clamp-2">
             {submission.excerpt}
           </div>
         )}
@@ -175,25 +161,20 @@ const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
             <p className="text-xs text-red-700">{submission.rejectionReason}</p>
           </div>
         )}
-
-        {/* Debug helper (optional) */}
-        {/* <div className="mt-2 text-[11px] text-gray-400">slug: {String(slug)}</div> */}
       </td>
 
       <td className="px-6 py-4">
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${statusConfig.color}`}
-        >
-          {statusConfig.icon}
-          {statusConfig.label}
-        </span>
+        <Badge variant={statusConfig.variant} size="sm" className="inline-flex items-center">
+           {statusConfig.icon}
+           {statusConfig.label}
+        </Badge>
       </td>
 
-      <td className="px-6 py-4 text-sm text-gray-500">
+      <td className="px-6 py-4 text-sm text-secondary">
         {formatDate(submission.submittedAt)}
       </td>
 
-      <td className="px-6 py-4 text-sm text-gray-500">
+      <td className="px-6 py-4 text-sm text-secondary">
         {submission.readingTime || 5} min
       </td>
 
@@ -201,7 +182,7 @@ const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => onNavigate(`/submissions/${submission._id}`)}
-            className="text-emerald-600 hover:text-emerald-800 flex items-center"
+            className="text-primary hover:text-secondary flex items-center transition-colors"
             title="View submission details"
           >
             <Eye className="w-4 h-4" />
@@ -210,7 +191,7 @@ const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
           {submission.status === "rejected" && (
             <button
               onClick={() => onNavigate(`/submit?edit=${submission._id}`)}
-              className="text-blue-600 hover:text-blue-800 flex items-center"
+              className="text-blue-600 hover:text-blue-800 flex items-center transition-colors"
               title="Edit & Resubmit"
             >
               <Edit className="w-4 h-4" />
@@ -222,28 +203,26 @@ const SubmissionRow = ({ submission, onDelete, onNavigate, isDeleting }) => {
             <button
               onClick={() => onDelete(submission._id)}
               disabled={isDeleting}
-              className="text-red-600 hover:text-red-800 flex items-center disabled:opacity-50"
+              className="text-destructive hover:text-red-700 flex items-center disabled:opacity-50 transition-colors"
               title="Delete submission"
             >
               <Trash2 className="w-4 h-4" />
             </button>
           )}
 
-          {/* ✅ FIX: Only route you have is /blog/:slug */}
           {submission.status === "approved" && blogLink ? (
             <Link
               to={blogLink}
-              className="text-emerald-600 hover:text-emerald-800 text-xs px-2 py-1 border border-emerald-200 rounded hover:bg-emerald-50"
+              className="text-primary hover:text-secondary text-xs px-2 py-1 border border-border rounded hover:bg-neutral-100 transition-colors"
               title="View published post"
             >
               View Post →
             </Link>
           ) : null}
 
-          {/* ✅ If approved but no slug, show why */}
           {submission.status === "approved" && !blogLink ? (
-            <span className="text-xs text-red-500 border border-red-200 rounded px-2 py-1">
-              Missing slug (fix admin publish)
+            <span className="text-xs text-destructive border border-destructive/20 rounded px-2 py-1 bg-red-50">
+              Missing slug
             </span>
           ) : null}
         </div>
@@ -264,21 +243,32 @@ const SummaryStats = ({ submissions }) => {
 
   return (
     <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-        <div className="text-2xl font-bold text-yellow-800">
+      <div className="bg-surface rounded-lg p-6 border border-border">
+        <div className="text-3xl font-bold text-primary mb-1">
           {stats.pending}
         </div>
-        <div className="text-sm text-yellow-700">Pending Review</div>
+        <div className="text-sm text-secondary flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-yellow-400" />
+            Pending Review
+        </div>
       </div>
-      <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-        <div className="text-2xl font-bold text-green-800">
+      <div className="bg-surface rounded-lg p-6 border border-border">
+         <div className="text-3xl font-bold text-primary mb-1">
           {stats.approved}
         </div>
-        <div className="text-sm text-green-700">Approved</div>
+        <div className="text-sm text-secondary flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-green-500" />
+            Approved
+        </div>
       </div>
-      <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-        <div className="text-2xl font-bold text-red-800">{stats.rejected}</div>
-        <div className="text-sm text-red-700">Rejected</div>
+      <div className="bg-surface rounded-lg p-6 border border-border">
+         <div className="text-3xl font-bold text-primary mb-1">
+           {stats.rejected}
+         </div>
+         <div className="text-sm text-secondary flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-red-500" />
+            Rejected
+        </div>
       </div>
     </div>
   );
@@ -302,22 +292,8 @@ export default function UserSubmissions() {
     useDeleteSubmissionMutation();
 
   useEffect(() => {
-    console.log("🔍 UserSubmissions userId:", userId);
-    console.log("📦 Submissions:", submissions);
-
-    // Helpful debug: see what slugs you have for approved posts
+    // Debug logging
     const arr = Array.isArray(submissions) ? submissions : [];
-    console.log(
-      "🧾 Approved slugs:",
-      arr
-        .filter((s) => s.status === "approved")
-        .map((s) => ({
-          id: s._id,
-          sanityPostId: s.sanityPostId,
-          sanitySlug: s.sanitySlug,
-          slug: s.slug,
-        }))
-    );
   }, [userId, submissions]);
 
   const handleDelete = async (submissionId) => {
@@ -339,29 +315,29 @@ export default function UserSubmissions() {
   if (!userId) return <UserIdMissingState />;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-background py-12">
+      <div className="max-w-6xl mx-auto px-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-2">
                 My Submissions
               </h1>
-              <p className="text-gray-600">Track your submitted posts</p>
+              <p className="text-secondary text-lg">Track and manage your submitted posts</p>
             </div>
-            <button
+            <Button
               onClick={() => navigate("/submit")}
-              className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors flex items-center"
+              className="flex items-center"
             >
               <PlusCircle className="w-5 h-5 mr-2" />
               Submit New Post
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-sm">
           {isLoading ? (
             <LoadingState />
           ) : error ? (
@@ -370,27 +346,27 @@ export default function UserSubmissions() {
             <EmptyState onNavigate={() => navigate("/submit")} />
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-neutral-50/50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
                       Title
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
                       Submitted
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Reading Time
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
+                      Read Time
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-surface divide-y divide-border">
                   {submissionsArray.map((submission) => (
                     <SubmissionRow
                       key={submission._id}

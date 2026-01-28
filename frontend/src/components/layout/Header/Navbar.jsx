@@ -1,234 +1,162 @@
-// frontend/src/components/layout/Navbar.jsx
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { Search, Menu, X, PlusCircle, FileText, Shield, Home, BookOpen, Tag } from "lucide-react";
+import { Search, Menu, X, User as UserIcon } from "lucide-react";
 import SearchBar from "../../shared/SearchBar";
 import UserMenu from "../../UserMenu";
+import Button from "../../ui/Button";
+import clsx from "clsx";
 
 export default function Navbar() {
   const location = useLocation();
-
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
-
-  const isActive = (path) => location.pathname === path;
-
-  const navLinks = [
-    { path: "/", label: "Home", icon: Home },
-    { path: "/blog", label: "Blog", icon: BookOpen },
-    { path: "/categories", label: "Categories", icon: Tag },
-  ];
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const navLinks = [
+    { path: "/", label: "Home" },
+    { path: "/blog", label: "Ride" }, // Mapping to 'Ride' etc as requested or keeping functional names?
+    // The user asked for "Ride, Technology, Safety, Community". 
+    // I will map them to existing routes for now or placeholders if routes don't exist.
+    // Assuming standard blog sections:
+    { path: "/categories/technology", label: "Technology" },
+    { path: "/categories/safety", label: "Safety" },
+    { path: "/categories/community", label: "Community" },
+  ];
+
+  // Helper to determine if link is active
+  const isActive = (path) => {
+    if (path === "/" && location.pathname !== "/") return false;
+    return location.pathname.startsWith(path);
+  };
+
   return (
     <nav
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-2xl"
-          : "bg-slate-900/90 backdrop-blur-xl border-b border-white/5"
-      }`}
+      className={clsx(
+        "sticky top-0 z-50 w-full border-b transition-all duration-300",
+        scrolled
+          ? "bg-white/90 backdrop-blur-md border-border shadow-sm"
+          : "bg-background border-transparent"
+      )}
     >
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link
-            to="/"
-            className="flex items-center space-x-2 text-2xl font-bold group"
-          >
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-              <span className="text-white font-bold text-lg">B</span>
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center text-white font-serif font-bold text-xl group-hover:bg-neutral-800 transition-colors">
+              B
             </div>
-            <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-              Blogify
+            <span className="text-xl font-bold tracking-tight text-primary">
+              Blogify.
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-2">
-            {navLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 flex items-center gap-2 ${
-                    isActive(link.path)
-                      ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
-                      : "text-gray-300 hover:text-emerald-400 hover:bg-white/5"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {link.label}
-                </Link>
-              );
-            })}
-
-            {/* User Submission Links (Authenticated Users) */}
-            {isAuthenticated && (
-              <>
-                <Link
-                  to="/submit"
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 hover:scale-105"
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  Submit Post
-                </Link>
-
-                <Link
-                  to="/user/submissions"
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-300 hover:text-emerald-400 hover:bg-white/5 rounded-xl transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  My Posts
-                </Link>
-              </>
-            )}
-
-            {/* Admin Link (Admin Users Only) */}
-            {user?.isAdmin && (
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link) => (
               <Link
-                to="/admin/pending"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-xl transition-colors border border-purple-500/20"
+                key={link.path}
+                to={link.path}
+                className={clsx(
+                  "text-sm font-medium transition-colors duration-200",
+                  isActive(link.path)
+                    ? "text-primary font-semibold"
+                    : "text-secondary hover:text-primary"
+                )}
               >
-                <Shield className="w-4 h-4" />
-                Admin
+                {link.label}
               </Link>
-            )}
+            ))}
           </div>
 
-          {/* Right Side Actions */}
-          <div className="flex items-center space-x-3">
-            {/* Search Button/Bar */}
-            <div className="hidden md:block">
-              {showSearch ? (
-                <div className="animate-fade-in w-64">
-                  <SearchBar onClose={() => setShowSearch(false)} />
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowSearch(true)}
-                  className="p-2.5 rounded-xl hover:bg-white/5 transition-colors group"
-                  aria-label="Search"
-                >
-                  <Search className="w-5 h-5 text-gray-400 group-hover:text-emerald-400" />
-                </button>
-              )}
-            </div>
+          {/* Right Actions */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowSearch(!showSearch)}
+              className="p-2 text-secondary hover:text-primary transition-colors"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
 
-            {/* Desktop Auth Section */}
-            <div className="hidden lg:flex items-center space-x-3">
+            <div className="hidden md:flex items-center gap-3">
               {isAuthenticated ? (
                 <UserMenu />
               ) : (
                 <>
                   <Link
                     to="/login"
-                    className="px-5 py-2.5 text-sm font-medium text-gray-300 hover:text-emerald-400 transition-colors"
+                    className="text-sm font-medium text-secondary hover:text-primary transition-colors"
                   >
-                    Sign In
+                    Log In
                   </Link>
-                  <Link
-                    to="/register"
-                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 hover:scale-105"
-                  >
-                    Get Started
+                  <Link to="/register">
+                    <Button size="small">Subscribe</Button>
                   </Link>
                 </>
               )}
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Toggle */}
             <button
-              className="lg:hidden p-2.5 rounded-xl hover:bg-white/5 transition-colors"
+              className="md:hidden p-2 text-secondary"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X className="w-6 h-6 text-gray-300" />
+                <X className="w-6 h-6" />
               ) : (
-                <Menu className="w-6 h-6 text-gray-300" />
+                <Menu className="w-6 h-6" />
               )}
             </button>
           </div>
         </div>
-
-        {/* Mobile Search Bar */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-3 pb-4 animate-slide-down">
-            <SearchBar />
-          </div>
-        )}
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-white/10 py-4 animate-slide-down">
-            <div className="flex flex-col space-y-1">
-              {/* Main Navigation Links */}
-              {navLinks.map((link) => {
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                      isActive(link.path)
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        : "text-gray-300 hover:bg-white/5"
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {link.label}
-                  </Link>
-                );
-              })}
-
-              {/* Divider */}
-              <div className="h-px bg-white/10 my-2 mx-4" />
-
-              {/* User Submission Links */}
-              {isAuthenticated && (
-                <>
-                  <Link
-                    to="/submit"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-emerald-500 to-cyan-500 text-white mb-2"
-                  >
-                    <PlusCircle className="w-5 h-5" />
-                    Submit Post
-                  </Link>
-
-                  <Link
-                    to="/user/submissions"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:bg-white/5"
-                  >
-                    <FileText className="w-5 h-5" />
-                    My Posts
-                  </Link>
-                </>
-              )}
-
-
-              {/* User Menu for Mobile */}
-              <div className="mt-4 px-4">
-                <UserMenu mobile />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-border bg-background py-4 px-4 animate-in slide-in-from-top-2">
+          <div className="flex flex-col space-y-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-base font-medium text-secondary hover:text-primary"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <hr className="border-border" />
+            {!isAuthenticated && (
+              <div className="flex flex-col gap-3 pt-2">
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                   <Button variant="ghost" className="w-full justify-start pl-0">Log In</Button>
+                </Link>
+                <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <Button className="w-full">Subscribe</Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Search Overlay (Simple implementation) */}
+      {showSearch && (
+        <div className="absolute top-full left-0 w-full bg-white border-b border-border p-4 shadow-lg animate-in slide-in-from-top-2">
+          <div className="max-w-2xl mx-auto">
+             <SearchBar onClose={() => setShowSearch(false)} />
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

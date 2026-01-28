@@ -1,20 +1,20 @@
-// frontend/src/components/ui/Card.jsx
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
+
 export default function Card({
   children,
   className = "",
   hoverable = false,
   padding = "p-6",
 }) {
-  return (
-    <div
-      className={`
-        bg-white rounded-2xl border border-gray-200
-        ${hoverable ? "hover:border-emerald-300 hover:shadow-lg transition-all duration-300" : ""}
-        ${padding}
-        ${className}
-      `}
-    >
-      {children}
-    </div>
+  const classes = twMerge(
+    clsx(
+      "bg-surface rounded-xl border border-border overflow-hidden",
+      hoverable && "hover:border-neutral-300 transition-colors duration-200",
+      padding,
+      className
+    )
   );
+
+  return <div className={classes}>{children}</div>;
 }

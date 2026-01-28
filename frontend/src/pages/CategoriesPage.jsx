@@ -8,10 +8,11 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   ArrowRight,
   Zap,
 } from "lucide-react";
+import Button from "../components/ui/Button";
+import clsx from "clsx";
 
 function useDebouncedValue(value, delay = 300) {
   const [debounced, setDebounced] = useState(value);
@@ -24,7 +25,7 @@ function useDebouncedValue(value, delay = 300) {
 
 export default function CategoriesPage() {
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("popular"); // default is meaningful
+  const [sort, setSort] = useState("popular");
   const [page, setPage] = useState(1);
   const limit = 12;
 
@@ -59,13 +60,13 @@ export default function CategoriesPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="min-h-screen bg-background">
+        <div className="max-w-[1400px] mx-auto px-6 py-12">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
               <div
                 key={i}
-                className="h-48 bg-slate-800/50 rounded-2xl animate-pulse"
+                className="h-48 bg-neutral-100 rounded-xl animate-pulse"
               />
             ))}
           </div>
@@ -76,27 +77,35 @@ export default function CategoriesPage() {
 
   if (isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-400 mb-4">Failed to load categories</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-xl"
-          >
+          <h2 className="text-2xl font-bold text-primary mb-2">Failed to load categories</h2>
+          <Button onClick={() => window.location.reload()}>
             Retry
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
+    <div className="min-h-screen bg-background pb-20">
+      <div className="max-w-[1400px] mx-auto px-6 py-16">
+        
+        {/* Header */}
+        <div className="mb-12">
+           <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-4">
+              Browse Topics
+           </h1>
+           <p className="text-lg text-secondary">
+              Find articles by category.
+           </p>
+        </div>
+
         {/* Search + Sort */}
-        <div className="flex flex-col md:flex-row gap-4 mb-10 bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <div className="flex flex-col md:flex-row gap-4 mb-10 border-b border-border pb-6">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary" />
             <input
               value={search}
               onChange={(e) => {
@@ -104,50 +113,30 @@ export default function CategoriesPage() {
                 setPage(1);
               }}
               placeholder="Search categories..."
-              className="w-full pl-10 py-3 bg-slate-900/50 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full pl-9 pr-4 py-2 bg-surface border border-border rounded-lg text-primary placeholder-tertiary focus:ring-1 focus:ring-primary focus:border-primary text-sm"
             />
           </div>
 
           <div className="flex gap-2">
             <button
-              onClick={() => setSort("popular")}
-              className={`px-4 py-3 rounded-xl flex items-center gap-2 transition-all ${
-                sort === "popular"
-                  ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg"
-                  : "bg-slate-900/50 text-gray-400 border border-white/10 hover:border-emerald-500/50"
-              }`}
+               onClick={() => setSort("popular")}
+               className={clsx(
+                   "px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-transparent",
+                   sort === "popular" ? "bg-neutral-100 text-primary border-border" : "text-secondary hover:text-primary"
+               )}
             >
-              <TrendingUp size={16} /> Popular
+               Popular
             </button>
-
             <button
-              onClick={() => setSort("recent")}
-              className={`px-4 py-3 rounded-xl flex items-center gap-2 transition-all ${
-                sort === "recent"
-                  ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg"
-                  : "bg-slate-900/50 text-gray-400 border border-white/10 hover:border-emerald-500/50"
-              }`}
+               onClick={() => setSort("recent")}
+               className={clsx(
+                   "px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-transparent",
+                   sort === "recent" ? "bg-neutral-100 text-primary border-border" : "text-secondary hover:text-primary"
+               )}
             >
-              <Clock size={16} /> Recent
+               Recent
             </button>
           </div>
-        </div>
-
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 backdrop-blur-sm text-emerald-400 rounded-full mb-6 border border-emerald-500/20">
-            <Sparkles size={16} className="animate-pulse" />
-            <span className="text-sm font-medium">Explore by Category</span>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
-              Browse
-            </span>{" "}
-            <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-              Categories
-            </span>
-          </h1>
-          <p className="text-gray-400 mt-2">Discover articles by topic</p>
         </div>
 
         {/* Grid */}
@@ -156,28 +145,26 @@ export default function CategoriesPage() {
             <Link
               key={cat._id}
               to={`/categories/${cat.slug?.current || cat.slug}`}
-              className="group relative bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-white/10 hover:border-emerald-500/50 hover:scale-105 transition-all duration-300 overflow-hidden"
+              className="group relative bg-surface p-6 rounded-xl border border-border hover:border-primary/30 hover:shadow-sm transition-all duration-300 block"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-cyan-500/0 group-hover:from-emerald-500/10 group-hover:to-cyan-500/10 transition-all duration-300" />
+              <div className="flex items-center justify-between mb-4">
+                 <div className="w-10 h-10 bg-neutral-100 rounded-lg flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                    <Zap className="w-5 h-5" />
+                 </div>
+                 <span className="text-xs font-semibold text-secondary bg-neutral-50 px-2 py-1 rounded border border-border">
+                    {cat.postCount || 0}
+                 </span>
+              </div>
 
-              <div className="relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Zap className="w-7 h-7 text-emerald-400" />
-                </div>
+              <h3 className="font-bold text-primary text-xl mb-2 group-hover:text-primary transition-colors">
+                {cat.title}
+              </h3>
+              <p className="text-sm text-secondary line-clamp-2 mb-4 h-10">
+                {cat.description || "Explore posts in this category"}
+              </p>
 
-                <h3 className="font-bold text-white text-xl mb-2">
-                  {cat.title}
-                </h3>
-                <p className="text-sm text-gray-400 line-clamp-2 mb-4">
-                  {cat.description || "Explore posts in this category"}
-                </p>
-
-                <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                  <span className="text-xs text-gray-500 font-medium">
-                    {cat.postCount || 0} articles
-                  </span>
-                  <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
-                </div>
+              <div className="flex items-center text-xs font-medium text-primary group-hover:underline">
+                 View Articles <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
           ))}
@@ -185,29 +172,26 @@ export default function CategoriesPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-4 bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
-            <button
+          <div className="flex justify-center items-center gap-4">
+            <Button
+              variant="outline"
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
-              className="p-3 border border-white/10 rounded-xl hover:bg-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-400"
-              aria-label="Previous page"
             >
-              <ChevronLeft />
-            </button>
+              Previous
+            </Button>
 
-            <span className="font-medium text-white">
-              Page <span className="text-emerald-400">{page}</span> of{" "}
-              <span className="text-emerald-400">{totalPages}</span>
+            <span className="text-sm font-medium text-secondary">
+              Page {page} of {totalPages}
             </span>
 
-            <button
+            <Button
+              variant="outline"
               disabled={page === totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="p-3 border border-white/10 rounded-xl hover:bg-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-400"
-              aria-label="Next page"
             >
-              <ChevronRight />
-            </button>
+              Next
+            </Button>
           </div>
         )}
       </div>
