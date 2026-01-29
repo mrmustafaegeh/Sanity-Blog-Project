@@ -1,8 +1,8 @@
 // frontend/src/components/SearchBar.jsx
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSearchPostsQuery } from "../../api/postsAPI";
-import { Search, X, Clock, TrendingUp } from "lucide-react";
+import { useSearchPostsQuery, useGetCategoriesQuery } from "../../api/postsAPI";
+import { Search, X, Clock, TrendingUp, Tag, FileText } from "lucide-react";
 
 export default function SearchBar() {
   const [query, setQuery] = useState("");
@@ -28,9 +28,19 @@ export default function SearchBar() {
     data: results = [],
     isFetching,
     error,
-  } = useSearchPostsQuery(debounced, {
-    skip: debounced.length < 2,
-  });
+  } = useSearchPostsQuery(
+    { q: debounced },
+    {
+      skip: debounced.length < 2,
+    }
+  );
+
+  const { data: categoriesData } = useGetCategoriesQuery({ limit: 100 });
+  const allCategories = categoriesData?.categories || [];
+
+  const filteredCategories = allCategories.filter((cat) =>
+    cat.title.toLowerCase().includes(debounced.toLowerCase())
+  );
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -53,7 +63,7 @@ export default function SearchBar() {
       setRecentSearches(updated);
       localStorage.setItem("recentSearches", JSON.stringify(updated));
 
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      navigate(`/blog?search=${encodeURIComponent(searchQuery)}`);
       setIsOpen(false);
       setQuery("");
     }
@@ -189,43 +199,82 @@ export default function SearchBar() {
                 <div className="p-4 text-center text-red-500 text-sm">
                   Failed to load results
                 </div>
-              ) : results.length > 0 ? (
+              ) : results.length > 0 || filteredCategories.length > 0 ? (
                 <div>
-                  <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
+                  <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
                     <p className="text-xs font-medium text-gray-500">
-                      Found {results.length} result
-                      {results.length !== 1 ? "s" : ""}
+                      Found {results.length + filteredCategories.length} result
+                      {results.length + filteredCategories.length !== 1 ? "s" : ""}
                     </p>
                   </div>
-                  {results.map((post) => (
-                    <Link
-                      key={post.slug.current}
-                      to={`/blog/${post.slug.current}`}
-                      onClick={() => {
-                        setIsOpen(false);
-                        setQuery("");
-                      }}
-                      className="block px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors group"
-                    >
-                      <h4 className="font-medium text-gray-900 group-hover:text-emerald-600">
-                        {post.title}
-                      </h4>
-                      {post.excerpt && (
-                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                          {post.excerpt}
-                        </p>
-                      )}
-                      <div className="flex items-center space-x-3 mt-2">
-                        <span className="text-xs text-gray-400">
-                          {post.author?.name || "Anonymous"}
-                        </span>
-                        <span className="text-xs text-gray-400">•</span>
-                        <span className="text-xs text-gray-400">
-                          {new Date(post.publishedAt).toLocaleDateString()}
-                        </span>
+
+                  {/* Categories Results */}
+                  {filteredCategories.length > 0 && (
+                    <div className="border-b border-gray-100">
+                      <div className="px-3 py-2 text-xs font-semibold text-gray-400 bg-gray-50/50 uppercase tracking-wider">
+                        Categories
                       </div>
-                    </Link>
-                  ))}
+                      {filteredCategories.map((cat) => (
+                        <Link
+                          key={cat._id}
+                          to={`/categories/${(cat.slug?.current || cat.slug || "").toLowerCase()}`}
+                          onClick={() => {
+                            setIsOpen(false);
+                            setQuery("");
+                          }}
+                          className="flex items-center px-4 py-2.5 hover:bg-emerald-50 text-gray-700 hover:text-emerald-700 transition-colors group"
+                        >
+                          <Tag className="w-4 h-4 mr-3 text-gray-400 group-hover:text-emerald-500" />
+                          <span className="font-medium">{cat.title}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Articles Results */}
+                  {results.length > 0 && (
+                    <div>
+                         {filteredCategories.length > 0 && (
+                        <div className="px-3 py-2 text-xs font-semibold text-gray-400 bg-gray-50/50 uppercase tracking-wider">
+                          Articles
+                        </div>
+                      )}
+                      {results.map((post) => (
+                        <Link
+                          key={post.slug.current}
+                          to={`/blog/${post.slug.current}`}
+                          onClick={() => {
+                            setIsOpen(false);
+                            setQuery("");
+                          }}
+                          className="block px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors group"
+                        >
+                          <div className="flex items-start">
+                            <FileText className="w-4 h-4 mr-3 mt-1 text-gray-400 group-hover:text-emerald-500 flex-shrink-0" />
+                            <div>
+                              <h4 className="font-medium text-gray-900 group-hover:text-emerald-600">
+                                {post.title}
+                              </h4>
+                              {post.excerpt && (
+                                <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                                  {post.excerpt}
+                                </p>
+                              )}
+                              <div className="flex items-center space-x-3 mt-2">
+                                <span className="text-xs text-gray-400">
+                                  {post.author?.name || "Anonymous"}
+                                </span>
+                                <span className="text-xs text-gray-400">•</span>
+                                <span className="text-xs text-gray-400">
+                                  {new Date(post.publishedAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                   <button
                     onClick={() => handleSearch(query)}
                     className="w-full p-3 text-center text-emerald-600 font-medium hover:bg-emerald-50 border-t border-gray-100"

@@ -2,11 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useGetPostsQuery, useGetCategoriesQuery } from "../api/postsAPI";
 import { Search, Filter, Grid, List, Calendar, TrendingUp } from "lucide-react";
-import PostCard from "../features/posts/components/PostCard"; // Checking import path, might need adjustment if moved to components/blog/PostCard
-// Actually, earlier I saw PostCard was in components/blog/PostCard.jsx. Let me check the User's import in the original file.
-// content: import PostCard from "../features/posts/components/PostCard"; 
-// I should verify where PostCard is. I edited src/components/blog/PostCard.jsx. 
-// So the import should be import PostCard from "../components/blog/PostCard";
+import PostCard from "../components/blog/PostCard";
 
 import Button from "../components/ui/Button";
 import clsx from "clsx";
@@ -227,7 +223,7 @@ export default function BlogListPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 mb-16">
                 {posts.map((post) => (
                   // Using inline requirement for PostCard
-                  <GridPostCard key={post._id} post={post} />
+                  <PostCard key={post._id} post={post} />
                 ))}
               </div>
 
@@ -260,8 +256,4 @@ export default function BlogListPage() {
   );
 }
 
-// Temporary internal component wrapper if import path is tricky, 
-// OR simpler: explicit import from correct path.
-// The file viewed previously was located at frontend/src/components/blog/PostCard.jsx 
-// so I should change the import at top.
-import GridPostCard from "../components/blog/PostCard";
+
