@@ -1,20 +1,22 @@
 // frontend/src/pages/SubmitPost.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useSubmitPostMutation } from "../api/submissionsAPI";
+import { useSubmitPostMutation, useUploadImageMutation } from "../api/submissionsAPI";
 import RichTextEditor from "../components/editor/RichTextEditor";
 import CategorySelect from "../components/editor/CategorySelect";
 import { toast } from "react-toastify";
 import Button from "../components/ui/Button";
 import clsx from "clsx";
-import { AlertCircle, FileText } from "lucide-react";
+import { AlertCircle, FileText, Image as ImageIcon, X, Loader2 } from "lucide-react";
 
 export default function SubmitPost() {
   const navigate = useNavigate();
   const [submitPost, { isLoading }] = useSubmitPostMutation();
+  const [uploadImage, { isLoading: isUploading }] = useUploadImageMutation();
 
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -61,6 +63,46 @@ export default function SubmitPost() {
       ...formData,
       tags,
     });
+  };
+
+  const handleImageSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image size must be less than 10MB");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const result = await uploadImage(formData).unwrap();
+      setFormData((prev) => ({
+        ...prev,
+        featuredImage: result.url,
+      }));
+      toast.success("Image uploaded successfully");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload image");
+    }
+  };
+
+  const removeImage = () => {
+    setFormData((prev) => ({
+      ...prev,
+      featuredImage: "",
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const validateForm = () => {
@@ -137,14 +179,14 @@ export default function SubmitPost() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-16">
+    <div className="min-h-screen bg-background py-12">
       <div className="max-w-4xl mx-auto px-6">
-        <div className="mb-10">
+        <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-3">
             Submit a Post
           </h1>
           <p className="text-secondary text-lg">
-            Share your knowledge. Your post will be reviewed by our admin team before publishing.
+            Share your knowledge with the community.
           </p>
         </div>
 
@@ -164,11 +206,70 @@ export default function SubmitPost() {
                    "w-full px-4 py-3 bg-neutral-50 border rounded-lg focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-tertiary",
                    errors.title ? "border-destructive focus:ring-destructive" : "border-border"
                 )}
-                placeholder="Enter a compelling title (min 10 characters)"
+                placeholder="Enter a compelling title"
               />
               {errors.title && (
                 <p className="mt-1 text-sm text-destructive">{errors.title}</p>
               )}
+            </div>
+
+            {/* Featured Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-primary mb-2">
+                Featured Image
+              </label>
+              
+              <div className="border-2 border-dashed border-border rounded-xl p-6 bg-neutral-50 hover:bg-neutral-100 transition-colors">
+                {formData.featuredImage ? (
+                  <div className="relative group">
+                    <img 
+                      src={formData.featuredImage} 
+                      alt="Featured preview" 
+                      className="w-full h-64 object-cover rounded-lg shadow-sm"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                      <Button 
+                        type="button" 
+                        variant="danger" 
+                        size="small"
+                        onClick={removeImage}
+                        className="flex items-center gap-2"
+                      >
+                        <X className="w-4 h-4" />
+                        Remove Image
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    className="flex flex-col items-center justify-center cursor-pointer text-center py-8"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="w-10 h-10 text-primary animate-spin mb-3" />
+                        <p className="text-sm text-primary font-medium">Uploading image...</p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 border border-border">
+                          <ImageIcon className="w-7 h-7 text-secondary" />
+                        </div>
+                        <p className="text-primary font-medium mb-1">Click to upload an image</p>
+                        <p className="text-xs text-secondary">SVG, PNG, JPG or GIF (max. 10MB)</p>
+                      </>
+                    )}
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+              </div>
             </div>
 
             {/* Excerpt */}
@@ -181,7 +282,7 @@ export default function SubmitPost() {
                 value={formData.excerpt}
                 onChange={handleChange}
                 rows={3}
-                className="w-full px-4 py-3 bg-neutral-50 border border-border rounded-lg focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-tertiary"
+                className="w-full px-4 py-3 bg-neutral-50 border border-border rounded-lg focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-tertiary resize-none"
                 placeholder="Brief summary of your post"
                 maxLength={200}
               />
@@ -237,48 +338,33 @@ export default function SubmitPost() {
                 </div>
             </div>
 
-            {/* Featured Image */}
-            <div>
-              <label className="block text-sm font-medium text-primary mb-2">
-                Featured Image URL (Optional)
-              </label>
-              <input
-                type="url"
-                name="featuredImage"
-                value={formData.featuredImage}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-neutral-50 border border-border rounded-lg focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-tertiary"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
-
             {/* Guidelines */}
-            <div className="bg-neutral-50 border border-border rounded-lg p-5">
-              <h3 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+            <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-5">
+              <h3 className="text-sm font-bold text-blue-900 mb-3 flex items-center gap-2">
                 <FileText className="w-4 h-4" />
                 Submission Guidelines
               </h3>
-              <ul className="text-sm text-secondary space-y-1.5 list-disc list-inside">
-                <li>Posts should be original and not plagiarized</li>
-                <li>Title must be at least 10 characters</li>
-                <li>Content must be at least 100 characters</li>
-                <li>No hate speech or inappropriate content</li>
-                <li>Review may take 24-48 hours</li>
+              <ul className="text-sm text-blue-800/80 space-y-1.5 list-disc list-inside">
+                <li>Posts must be original content.</li>
+                <li>Ensure high quality images and formatting.</li>
+                <li>Respect intellectual property rights.</li>
+                <li>Submissions are reviewed within 24-48 hours.</li>
               </ul>
             </div>
 
             {/* Submit Button */}
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+            <div className="flex items-center justify-end gap-3 pt-6 border-t border-border">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => navigate(-1)}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isUploading}
+                className="w-full sm:w-auto"
               >
                 {isLoading ? "Submitting..." : "Submit for Review"}
               </Button>

@@ -514,3 +514,30 @@ export const rejectSubmission = async (req, res) => {
     });
   }
 };
+
+// Upload submission image
+export const uploadImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No image file uploaded",
+      });
+    }
+
+    console.log("🖼️ Image uploaded:", req.file.path);
+
+    res.json({
+      success: true,
+      message: "Image uploaded successfully",
+      url: req.file.path,
+    });
+  } catch (error) {
+    console.error("❌ Error uploading image:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during image upload",
+      error: error.message,
+    });
+  }
+};

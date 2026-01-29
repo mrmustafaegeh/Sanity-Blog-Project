@@ -1,12 +1,13 @@
 // frontend/src/components/pages/HomePage.jsx
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
+import { useSelector } from "react-redux";
 import {
   useGetRecentPostsQuery,
   useGetFeaturedPostsQuery,
   useGetCategoriesQuery,
 } from "../api/postsAPI";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, PenTool } from "lucide-react";
 
 import FeaturedPost from "../components/blog/FeaturedPost";
 import PostCard from "../components/blog/PostCard";
@@ -32,6 +33,8 @@ const FeaturedSkeleton = () => (
 );
 
 export default function HomePage() {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+
   const { data: featuredPosts = [], isLoading: featuredLoading } =
     useGetFeaturedPostsQuery(1);
 
@@ -115,6 +118,32 @@ export default function HomePage() {
         <FeaturedSkeleton />
       ) : (
         featuredPost && <FeaturedPost post={featuredPost} />
+      )}
+
+      {/* Create Post CTA for Logged In Users */}
+      {isAuthenticated && (
+        <section className="bg-neutral-900 text-white rounded-2xl p-8 md:p-12 relative overflow-hidden shadow-lg">
+           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+             <div className="text-center md:text-left space-y-2">
+                <h2 className="text-2xl md:text-3xl font-serif font-bold flex items-center gap-3 justify-center md:justify-start">
+                  Welcome back, {user?.name?.split(" ")[0] || "Writer"}
+                  <PenTool className="w-6 h-6 text-neutral-400" />
+                </h2>
+                <p className="text-neutral-400 text-lg max-w-xl">
+                  Have an insight to share? Contribute your knowledge to the community.
+                </p>
+             </div>
+             <Link to="/submit">
+                <Button variant="secondary" size="large" className="border-none whitespace-nowrap">
+                   Create New Post
+                </Button>
+             </Link>
+           </div>
+           
+           {/* Decorative elements */}
+           <div className="absolute top-0 right-0 -m-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
+           <div className="absolute bottom-0 left-0 -m-8 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
+        </section>
       )}
 
       {/* Recent Posts Grid - Skeleton or Content */}

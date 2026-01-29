@@ -9,12 +9,15 @@ import {
   rejectSubmission,
   deleteSubmission,
   updateSubmission,
+  uploadImage,
 } from "../controllers/submissionController.js";
 import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
+import postUpload from "../middleware/postUpload.middleware.js";
 
 const router = express.Router();
 
 // User routes
+router.post("/upload-image", authenticate, postUpload.single("image"), uploadImage);
 router.post("/", authenticate, submitPost);
 router.get("/user", authenticate, getUserSubmissions);
 router.get("/:id", authenticate, getSubmissionById);

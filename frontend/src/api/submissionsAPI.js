@@ -13,6 +13,15 @@ export const submissionsAPI = apiSlice.injectEndpoints({
       invalidatesTags: ["UserSubmissions"],
     }),
 
+    // Upload image
+    uploadImage: builder.mutation({
+      query: (formData) => ({
+        url: "/submissions/upload-image",
+        method: "POST",
+        body: formData,
+      }),
+    }),
+
     // Get user's submissions
     getUserSubmissions: builder.query({
       query: ({ page = 1, limit = 10, status } = {}) => ({
@@ -101,4 +110,5 @@ export const {
   useDeleteSubmissionMutation,
   useApproveSubmissionMutation,
   useRejectSubmissionMutation,
+  useUploadImageMutation,
 } = submissionsAPI;
